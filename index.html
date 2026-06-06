@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=iphone-editor-full-6">
+  <link rel="stylesheet" href="styles.css?v=iphone-real-viewport-7">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=iphone-editor-full-6"></script>
+  <script src="app.js?v=iphone-real-viewport-7"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -263,8 +263,26 @@
         if (!input) {
           return;
         }
+        forceEditorViewportWidth();
         input.style.height = "auto";
         input.style.height = Math.max(input.scrollHeight + 6, 430) + "px";
+      }
+
+      function forceEditorViewportWidth() {
+        var input = byId("jcl-input");
+        var rect;
+        var left;
+        var viewportWidth;
+        if (!input || window.innerWidth > 920) {
+          return;
+        }
+        rect = input.getBoundingClientRect();
+        left = rect.left || 0;
+        viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        input.style.width = Math.max(viewportWidth - left, viewportWidth) + "px";
+        input.style.maxWidth = "none";
+        input.style.marginLeft = (-left) + "px";
+        input.style.paddingTop = "44px";
       }
 
       function analyze(shouldScroll) {
@@ -324,6 +342,14 @@
       });
       on(byId("jcl-input"), "input", resizeInputToContent);
       setTheme("dark");
+      forceEditorViewportWidth();
+      on(window, "resize", forceEditorViewportWidth);
+      on(window, "orientationchange", function () {
+        setTimeout(function () {
+          forceEditorViewportWidth();
+          resizeInputToContent();
+        }, 250);
+      });
     }());
   </script>
 </body>
