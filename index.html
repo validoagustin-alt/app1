@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=iphone-full-width-5">
+  <link rel="stylesheet" href="styles.css?v=iphone-editor-full-6">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=iphone-full-width-5"></script>
+  <script src="app.js?v=iphone-editor-full-6"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -178,6 +178,7 @@
         selected = examples[Number(select.value)] || examples[0];
         input.value = selected.jcl;
         resizeInputToContent();
+        input.scrollTop = 0;
         analyze(false);
       }
 
