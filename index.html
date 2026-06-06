@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JCL Explainer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">z/OS JCL</p>
+        <h1>Explicador línea por línea</h1>
+        <p class="hero-copy">
+          Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD,
+          comentarios, continuaciones y datos inline.
+        </p>
+      </div>
+      <div class="hero-card">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Tema oscuro</button>
+        <span class="metric" id="line-count">0</span>
+        <span class="metric-label">líneas analizadas</span>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel input-panel">
+        <div class="panel-header">
+          <div>
+            <h2>JCL de entrada</h2>
+            <p>Pega aquí el job completo, incluyendo comentarios si los tienes.</p>
+          </div>
+          <button class="ghost-button" id="sample-button" type="button">Cargar ejemplo</button>
+        </div>
+        <textarea id="jcl-input" spellcheck="false" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
+        <div class="actions">
+          <button id="analyze-button" type="button">Explicar JCL</button>
+          <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="panel summary-panel" id="summary-panel" tabindex="-1">
+        <h2>Resumen rápido</h2>
+        <div id="summary" class="summary empty-state">
+          Todavía no hay análisis. Pega un JCL y pulsa “Explicar JCL”.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Explicación línea por línea</h2>
+          <p>Cada línea conserva el texto original y añade una lectura funcional.</p>
+        </div>
+      </div>
+      <div id="results" class="results empty-state">
+        El análisis aparecerá aquí.
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
