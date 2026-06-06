@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=header-copy-16">
+  <link rel="stylesheet" href="styles.css?v=screen-flow-17">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -37,7 +37,7 @@
         <div class="panel-header">
           <div>
             <h2>JCL de entrada</h2>
-            <p>Pega aqui el job completo.</p>
+            <p>Pega aqui el job completo, o elegir un ejemplo del menu desplegable.</p>
           </div>
           <div class="example-controls">
             <label for="example-select">Ejemplos</label>
@@ -47,20 +47,23 @@
         </div>
         <textarea id="jcl-input" spellcheck="false" style="background:#000;color:#33ff99;caret-color:#33ff99;border-color:#1f5c42;" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
         <div class="actions">
+          <button id="summary-button" type="button">Resumen simplificado</button>
           <button id="analyze-button" type="button">Explicar JCL</button>
           <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
         </div>
       </div>
 
-      <div class="panel summary-panel" id="summary-panel" tabindex="-1">
-        <h2>Resumen rápido</h2>
+      <div class="panel summary-panel screen-panel" id="summary-panel" tabindex="-1" hidden>
+        <button class="back-button" type="button" data-back-menu>Ir al menu anterior</button>
+        <h2>Resumen simplificado</h2>
         <div id="summary" class="summary empty-state">
           Todavía no hay análisis. Pega un JCL y pulsa “Explicar JCL”.
         </div>
       </div>
     </section>
 
-    <section class="panel results-panel">
+    <section class="panel results-panel screen-panel" id="results-panel" tabindex="-1" hidden>
+      <button class="back-button" type="button" data-back-menu>Ir al menu anterior</button>
       <div class="panel-header">
         <div>
           <h2>Explicación línea por línea</h2>
@@ -73,7 +76,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=header-copy-16"></script>
+  <script src="app.js?v=screen-flow-17"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -182,6 +185,47 @@
           byId("summary").className = "summary empty-state";
           byId("summary").innerHTML = "Ejemplo cargado en el editor.";
         }
+        showFallbackScreen("menu");
+      }
+
+      function showFallbackScreen(screenName) {
+        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        var summaryPanel = byId("summary-panel");
+        var resultsPanel = byId("results-panel");
+        if (inputPanel) {
+          inputPanel.hidden = screenName !== "menu";
+        }
+        if (summaryPanel) {
+          summaryPanel.hidden = screenName !== "summary";
+        }
+        if (resultsPanel) {
+          resultsPanel.hidden = screenName !== "explanation";
+        }
+      }
+
+      function scrollFallbackPanel(panel) {
+        if (panel && panel.scrollIntoView) {
+          panel.scrollIntoView();
+        }
+        if (panel && panel.focus) {
+          try {
+            panel.focus();
+          } catch (error) {}
+        }
+      }
+
+      function showFallbackSummary() {
+        var panel = byId("summary-panel");
+        analyze(false);
+        showFallbackScreen("summary");
+        scrollFallbackPanel(panel);
+      }
+
+      function showFallbackExplanation() {
+        var panel = byId("results-panel");
+        analyze(false);
+        showFallbackScreen("explanation");
+        scrollFallbackPanel(panel);
       }
 
       function setTheme(theme) {
@@ -324,20 +368,36 @@
 
       populateExamples();
       on(byId("sample-button"), "click", loadExample);
+      on(byId("summary-button"), "click", showFallbackSummary);
       on(byId("theme-toggle"), "click", function () {
         setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark");
       });
       on(byId("analyze-button"), "click", function () {
-        analyze(true);
+        showFallbackExplanation();
       });
       on(byId("clear-button"), "click", function () {
         var input = byId("jcl-input");
         if (input) {
           input.value = "";
         }
+        if (byId("line-count")) {
+          byId("line-count").innerHTML = "0";
+        }
+        showFallbackScreen("menu");
       });
+      if (document.querySelectorAll) {
+        var backButtons = document.querySelectorAll("[data-back-menu]");
+        var i;
+        for (i = 0; i < backButtons.length; i += 1) {
+          on(backButtons[i], "click", function () {
+            showFallbackScreen("menu");
+            scrollFallbackPanel(document.querySelector(".input-panel"));
+          });
+        }
+      }
       setTheme("dark");
       applyStableEditorFrame();
+      showFallbackScreen("menu");
     }());
   </script>
 </body>
