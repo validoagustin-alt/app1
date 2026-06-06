@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark" class="theme-dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-theme="dark">
+<body data-theme="dark" class="theme-dark">
   <main class="app-shell">
     <nav class="topbar">
       <div class="brand-mark">JCL</div>
@@ -183,10 +183,34 @@
       function setTheme(theme) {
         var button = byId("theme-toggle");
         var dark = theme === "dark";
-        document.body.setAttribute("data-theme", dark ? "dark" : "light");
+        applyThemeState(dark);
         if (button) {
           button.innerHTML = dark ? "Tema claro" : "Tema oscuro";
           button.setAttribute("aria-pressed", dark ? "true" : "false");
+        }
+      }
+
+      function applyThemeState(dark) {
+        setThemeOnElement(document.documentElement, dark);
+        setThemeOnElement(document.body, dark);
+      }
+
+      function setThemeOnElement(element, dark) {
+        var theme = dark ? "dark" : "light";
+        if (!element) {
+          return;
+        }
+        element.setAttribute("data-theme", theme);
+        if (element.classList) {
+          if (dark) {
+            element.classList.add("theme-dark");
+            element.classList.remove("theme-light");
+          } else {
+            element.classList.add("theme-light");
+            element.classList.remove("theme-dark");
+          }
+        } else {
+          element.className = dark ? "theme-dark" : "theme-light";
         }
       }
 
