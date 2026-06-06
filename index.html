@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=fixed-iphone-editor-10">
+  <link rel="stylesheet" href="styles.css?v=fixed-mobile-frame-11">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=fixed-iphone-editor-10"></script>
+  <script src="app.js?v=fixed-mobile-frame-11"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -177,6 +177,7 @@
         }
         selected = examples[Number(select.value)] || examples[0];
         input.value = selected.jcl;
+        applyStableEditorFrame();
         input.scrollTop = 0;
         analyze(false);
       }
@@ -297,6 +298,21 @@
         }
       }
 
+      function applyStableEditorFrame() {
+        var input = byId("jcl-input");
+        if (!input || window.innerWidth > 920) {
+          return;
+        }
+        input.style.width = "calc(100vw - 16px)";
+        input.style.maxWidth = "calc(100vw - 16px)";
+        input.style.height = "560px";
+        input.style.minHeight = "560px";
+        input.style.maxHeight = "none";
+        input.style.margin = "38px 0 0 calc(50% - 50vw + 8px)";
+        input.style.resize = "none";
+        input.style.overflow = "auto";
+      }
+
       populateExamples();
       on(byId("sample-button"), "click", loadExample);
       on(byId("theme-toggle"), "click", function () {
@@ -312,6 +328,7 @@
         }
       });
       setTheme("dark");
+      applyStableEditorFrame();
     }());
   </script>
 </body>
