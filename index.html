@@ -6,7 +6,7 @@
   <title>JCL Explainer</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-theme="dark">
   <main class="app-shell">
     <nav class="topbar">
       <div class="brand-mark">JCL</div>
@@ -14,7 +14,7 @@
         <strong>JCL Explainer</strong>
         <span>z/OS helper</span>
       </div>
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Tema oscuro</button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true">Tema claro</button>
     </nav>
 
     <section class="hero">
@@ -81,5 +81,169 @@
   </main>
 
   <script src="app.js"></script>
+  <script>
+    (function () {
+      if (window.__JCL_APP_READY) {
+        return;
+      }
+
+      var examples = [
+        {
+          title: "SORT nomina",
+          jcl: "//PAYROLL JOB (ACCT),'NOMINA',CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID\n//* EJEMPLO SIMPLE DE JCL PARA PROCESAR NOMINA\n//STEP01  EXEC PGM=SORT\n//SYSOUT  DD SYSOUT=*\n//SORTIN  DD DSN=PROD.PAYROLL.INPUT,DISP=SHR\n//SORTOUT DD DSN=PROD.PAYROLL.SORTED,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(CYL,(5,2),RLSE),\n//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)\n//SYSIN   DD *\n  SORT FIELDS=(1,10,CH,A)\n/*\n//STEP02  EXEC PGM=IEFBR14\n//CLEANUP DD DSN=TEMP.PAYROLL.WORK,DISP=(OLD,DELETE,KEEP)"
+        },
+        {
+          title: "Copiar miembro PDS",
+          jcl: "//CPYMBR  JOB (ACCT),'COPY MEMBER',CLASS=A,MSGCLASS=X\n//* COPIA EL MIEMBRO COBPGM1 DESDE UNA PDS A OTRA\n//COPY    EXEC PGM=IEBCOPY\n//SYSPRINT DD SYSOUT=*\n//SYSUT1   DD DSN=DEV.SOURCE.COBOL,DISP=SHR\n//SYSUT2   DD DSN=QA.SOURCE.COBOL,DISP=SHR\n//SYSIN    DD *\n  COPY INDD=SYSUT1,OUTDD=SYSUT2\n  SELECT MEMBER=COBPGM1\n/*"
+        },
+        {
+          title: "Copiar dataset secuencial",
+          jcl: "//IEBGEN  JOB (ACCT),'COPY SEQ',CLASS=A,MSGCLASS=X\n//STEP01  EXEC PGM=IEBGENER\n//SYSPRINT DD SYSOUT=*\n//SYSUT1   DD DSN=PROD.CUSTOMER.INPUT,DISP=SHR\n//SYSUT2   DD DSN=TEST.CUSTOMER.COPY,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(TRK,(10,5),RLSE),\n//            DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)\n//SYSIN    DD DUMMY"
+        },
+        {
+          title: "Borrar dataset",
+          jcl: "//DELDATA JOB (ACCT),'DELETE DSN',CLASS=A,MSGCLASS=X\n//DELETE  EXEC PGM=IDCAMS\n//SYSPRINT DD SYSOUT=*\n//SYSIN    DD *\n  DELETE TEST.CUSTOMER.OLD PURGE\n  SET MAXCC=0\n/*"
+        },
+        {
+          title: "Crear VSAM KSDS",
+          jcl: "//DEFVSAM JOB (ACCT),'DEFINE VSAM',CLASS=A,MSGCLASS=X\n//IDCAMS  EXEC PGM=IDCAMS\n//SYSPRINT DD SYSOUT=*\n//SYSIN    DD *\n  DEFINE CLUSTER (NAME(TEST.CUST.KSDS) -\n                  INDEXED -\n                  KEYS(10 0) -\n                  RECORDSIZE(80 80) -\n                  TRACKS(5 2)) -\n         DATA  (NAME(TEST.CUST.KSDS.DATA)) -\n         INDEX (NAME(TEST.CUST.KSDS.INDEX))\n/*"
+        },
+        {
+          title: "Renombrar dataset",
+          jcl: "//RENDSN  JOB (ACCT),'RENAME DSN',CLASS=A,MSGCLASS=X\n//ALTER   EXEC PGM=IDCAMS\n//SYSPRINT DD SYSOUT=*\n//SYSIN    DD *\n  ALTER TEST.CUSTOMER.COPY NEWNAME(TEST.CUSTOMER.COPY.BKUP)\n/*"
+        },
+        {
+          title: "Crear PDS",
+          jcl: "//CRTPDS  JOB (ACCT),'CREATE PDS',CLASS=A,MSGCLASS=X\n//STEP01  EXEC PGM=IEFBR14\n//NEWPDS  DD DSN=DEV.SOURCE.COBOL,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(CYL,(2,1,20),RLSE),\n//            DCB=(DSORG=PO,RECFM=FB,LRECL=80,BLKSIZE=0)"
+        },
+        {
+          title: "GDG nueva generacion",
+          jcl: "//GDGNEW  JOB (ACCT),'NEW GDG',CLASS=A,MSGCLASS=X\n//STEP01  EXEC PGM=IEBGENER\n//SYSPRINT DD SYSOUT=*\n//SYSUT1   DD DSN=PROD.DAILY.EXTRACT,DISP=SHR\n//SYSUT2   DD DSN=PROD.DAILY.GDG(+1),\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(CYL,(3,1),RLSE),\n//            DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)\n//SYSIN    DD DUMMY"
+        },
+        {
+          title: "TWS/OPC tailoring",
+          jcl: "//TWSJOB  JOB (ACCT),'TWS SAMPLE',CLASS=A,MSGCLASS=X\n//*%OPC SCAN\n//*%OPC SETVAR TBL=PAYROLL\n//STEP01  EXEC PGM=IEFBR14\n//REPORT  DD DSN=PAYROLL.REPORT.&OADATE,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(TRK,(5,2),RLSE),\n//            DCB=(RECFM=FB,LRECL=133,BLKSIZE=0)"
+        },
+        {
+          title: "Endevor batch SCL",
+          jcl: "//ENDVOR  JOB (ACCT),'ENDEVOR',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  ADD ELEMENT 'PAYCALC'\n      FROM DSNAME 'DEV.SOURCE.COBOL' .\n/*"
+        }
+      ];
+
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function on(el, eventName, handler) {
+        if (!el) {
+          return;
+        }
+        if (el.addEventListener) {
+          el.addEventListener(eventName, handler, false);
+        } else if (el.attachEvent) {
+          el.attachEvent("on" + eventName, handler);
+        }
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function populateExamples() {
+        var select = byId("example-select");
+        var i;
+        var option;
+        if (!select) {
+          return;
+        }
+        select.innerHTML = "";
+        for (i = 0; i < examples.length; i += 1) {
+          option = document.createElement("option");
+          option.value = String(i);
+          option.appendChild(document.createTextNode((i + 1) + ". " + examples[i].title));
+          select.appendChild(option);
+        }
+      }
+
+      function loadExample() {
+        var select = byId("example-select");
+        var input = byId("jcl-input");
+        var selected;
+        if (!select || !input) {
+          return;
+        }
+        selected = examples[Number(select.value)] || examples[0];
+        input.value = selected.jcl;
+        analyze();
+      }
+
+      function setTheme(theme) {
+        var button = byId("theme-toggle");
+        var dark = theme === "dark";
+        document.body.setAttribute("data-theme", dark ? "dark" : "light");
+        if (button) {
+          button.innerHTML = dark ? "Tema claro" : "Tema oscuro";
+          button.setAttribute("aria-pressed", dark ? "true" : "false");
+        }
+      }
+
+      function analyze() {
+        var input = byId("jcl-input");
+        var results = byId("results");
+        var summary = byId("summary");
+        var lineCount = byId("line-count");
+        var summaryPanel = byId("summary-panel");
+        var lines;
+        var html = "";
+        var i;
+        var line;
+        var type;
+        if (!input || !results || !summary) {
+          return;
+        }
+        lines = input.value.replace(/\r\n/g, "\n").split("\n");
+        if (lineCount) {
+          lineCount.innerHTML = String(lines.length);
+        }
+        for (i = 0; i < lines.length; i += 1) {
+          line = lines[i];
+          type = "Texto";
+          if (line.indexOf("//*%OPC") === 0) { type = "TWS/OPC"; }
+          else if (line.indexOf("//*") === 0) { type = "Comentario"; }
+          else if (line.indexOf("//") === 0 && line.indexOf(" JOB ") > -1) { type = "JOB"; }
+          else if (line.indexOf("//") === 0 && line.indexOf(" EXEC ") > -1) { type = "EXEC"; }
+          else if (line.indexOf("//") === 0 && line.indexOf(" DD ") > -1) { type = "DD"; }
+          else if (/^\s*SORT\s+FIELDS=/i.test(line)) { type = "SORT"; }
+          else if (/^\s*(DELETE|DEFINE|ALTER|SET)\b/i.test(line)) { type = "IDCAMS"; }
+          else if (/^\s*(SET FROM|ADD ELEMENT|UPDATE ELEMENT|GENERATE ELEMENT|MOVE ELEMENT|RETRIEVE ELEMENT)\b/i.test(line)) { type = "Endevor SCL"; }
+          html += '<article class="line-card"><div class="line-number">' + (i + 1) + '</div><div><pre class="line-code">' + escapeHtml(line || " ") + '</pre><div class="line-title"><span class="badge">' + type + '</span><strong>Fallback iPhone</strong></div><p class="line-explanation">Analisis basico compatible con Safari/iPhone. Recarga en desktop para la explicacion completa si lo necesitas.</p></div></article>';
+        }
+        results.className = "results";
+        results.innerHTML = html;
+        summary.className = "summary";
+        summary.innerHTML = '<div class="summary-lead"><strong>Resumen basico generado en modo compatible.</strong><span>Se detectaron ' + lines.length + ' lineas. El modo completo no cargo en este navegador, pero los botones principales ya funcionan.</span></div>';
+        if (summaryPanel && summaryPanel.scrollIntoView) {
+          summaryPanel.scrollIntoView();
+        }
+      }
+
+      populateExamples();
+      on(byId("sample-button"), "click", loadExample);
+      on(byId("theme-toggle"), "click", function () {
+        setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+      on(byId("analyze-button"), "click", analyze);
+      on(byId("clear-button"), "click", function () {
+        var input = byId("jcl-input");
+        if (input) {
+          input.value = "";
+        }
+      });
+      setTheme("dark");
+    }());
+  </script>
 </body>
 </html>
