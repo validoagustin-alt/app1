@@ -8,6 +8,15 @@
 </head>
 <body>
   <main class="app-shell">
+    <nav class="topbar">
+      <div class="brand-mark">JCL</div>
+      <div>
+        <strong>JCL Explainer</strong>
+        <span>z/OS helper</span>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Tema oscuro</button>
+    </nav>
+
     <section class="hero">
       <div>
         <p class="eyebrow">z/OS JCL</p>
@@ -16,9 +25,15 @@
           Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD,
           comentarios, continuaciones y datos inline.
         </p>
+        <div class="hero-tags" aria-label="Capacidades principales">
+          <span>DISP / DCB / SPACE</span>
+          <span>SORT FIELDS</span>
+          <span>IDCAMS</span>
+          <span>TWS / Endevor</span>
+        </div>
       </div>
       <div class="hero-card">
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Tema oscuro</button>
+        <span class="metric-kicker">Análisis actual</span>
         <span class="metric" id="line-count">0</span>
         <span class="metric-label">líneas analizadas</span>
       </div>
@@ -31,7 +46,11 @@
             <h2>JCL de entrada</h2>
             <p>Pega aquí el job completo, incluyendo comentarios si los tienes.</p>
           </div>
-          <button class="ghost-button" id="sample-button" type="button">Cargar ejemplo</button>
+          <div class="example-controls">
+            <label for="example-select">Ejemplos</label>
+            <select id="example-select"></select>
+            <button class="ghost-button" id="sample-button" type="button">Cargar ejemplo</button>
+          </div>
         </div>
         <textarea id="jcl-input" spellcheck="false" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
         <div class="actions">
