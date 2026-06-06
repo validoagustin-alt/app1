@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=iphone-real-viewport-7">
+  <link rel="stylesheet" href="styles.css?v=iphone-editor-gutter-8">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=iphone-real-viewport-7"></script>
+  <script src="app.js?v=iphone-editor-gutter-8"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -279,10 +279,12 @@
         rect = input.getBoundingClientRect();
         left = rect.left || 0;
         viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-        input.style.width = Math.max(viewportWidth - left, viewportWidth) + "px";
+        input.style.width = Math.max(viewportWidth - 16, 320) + "px";
         input.style.maxWidth = "none";
-        input.style.marginLeft = (-left) + "px";
-        input.style.paddingTop = "44px";
+        input.style.marginLeft = (8 - left) + "px";
+        input.style.marginRight = "8px";
+        input.style.marginTop = "38px";
+        input.style.paddingTop = "14px";
       }
 
       function analyze(shouldScroll) {
