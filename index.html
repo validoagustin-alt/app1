@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=stable-font-editor-12">
+  <link rel="stylesheet" href="styles.css?v=no-auto-analyze-13">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=stable-font-editor-12"></script>
+  <script src="app.js?v=no-auto-analyze-13"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -178,7 +178,17 @@
         selected = examples[Number(select.value)] || examples[0];
         input.value = selected.jcl;
         input.scrollTop = 0;
-        analyze(false);
+        if (byId("line-count")) {
+          byId("line-count").innerHTML = String(input.value.replace(/\r\n/g, "\n").split("\n").length);
+        }
+        if (byId("results")) {
+          byId("results").className = "results empty-state";
+          byId("results").innerHTML = "Ejemplo cargado. Pulsa &ldquo;Explicar JCL&rdquo; para analizarlo.";
+        }
+        if (byId("summary")) {
+          byId("summary").className = "summary empty-state";
+          byId("summary").innerHTML = "Ejemplo cargado en el editor.";
+        }
       }
 
       function setTheme(theme) {
