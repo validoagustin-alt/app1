@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=dark-full-jcl-2">
+  <link rel="stylesheet" href="styles.css?v=green-mobile-wide-3">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=dark-full-jcl-2"></script>
+  <script src="app.js?v=green-mobile-wide-3"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -219,18 +219,18 @@
       function applyInlineTheme(dark) {
         var root = document.documentElement;
         var vars = dark ? {
-          "--bg": "#0d1220",
-          "--panel-rgb": "21, 27, 43",
-          "--panel-strong": "#101827",
-          "--ink": "#edf2ff",
-          "--muted": "#9aa8c7",
-          "--line": "#2b3753",
-          "--accent": "#8ea2ff",
-          "--accent-dark": "#bdc8ff",
-          "--accent-soft": "#24315e",
-          "--field": "#0f1626",
-          "--button-soft": "#26324d",
-          "--button-soft-hover": "#334060"
+          "--bg": "#07110f",
+          "--panel-rgb": "13, 21, 27",
+          "--panel-strong": "#111820",
+          "--ink": "#f5f8ff",
+          "--muted": "#9ca8b8",
+          "--line": "#23313d",
+          "--accent": "#33e6a0",
+          "--accent-dark": "#7df7d0",
+          "--accent-soft": "#102f29",
+          "--field": "#081016",
+          "--button-soft": "#0b1218",
+          "--button-soft-hover": "#14212b"
         } : {
           "--bg": "#f3f0ea",
           "--panel-rgb": "255, 253, 248",
@@ -252,7 +252,7 @@
           }
         }
         document.body.style.background = dark
-          ? "radial-gradient(circle at top left, rgba(142, 162, 255, 0.2), transparent 34rem), linear-gradient(135deg, #070a12 0%, #0d1220 100%)"
+          ? "radial-gradient(circle at 22% 0%, rgba(51, 230, 160, 0.16), transparent 28rem), radial-gradient(circle at 74% 4%, rgba(59, 130, 246, 0.16), transparent 30rem), linear-gradient(120deg, rgba(0, 55, 38, 0.72) 0%, rgba(5, 12, 18, 0.96) 42%, #07101a 100%)"
           : "radial-gradient(circle at top left, rgba(75, 91, 220, 0.22), transparent 34rem), linear-gradient(135deg, #f7f3ec 0%, #f3f0ea 100%)";
         document.body.style.color = dark ? "#edf2ff" : "#1f2933";
       }
