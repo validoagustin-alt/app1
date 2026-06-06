@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=dark-full-jcl-2">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -80,7 +80,7 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=dark-full-jcl-2"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -177,7 +177,8 @@
         }
         selected = examples[Number(select.value)] || examples[0];
         input.value = selected.jcl;
-        analyze();
+        resizeInputToContent();
+        analyze(false);
       }
 
       function setTheme(theme) {
@@ -212,9 +213,60 @@
         } else {
           element.className = dark ? "theme-dark" : "theme-light";
         }
+        applyInlineTheme(dark);
       }
 
-      function analyze() {
+      function applyInlineTheme(dark) {
+        var root = document.documentElement;
+        var vars = dark ? {
+          "--bg": "#0d1220",
+          "--panel-rgb": "21, 27, 43",
+          "--panel-strong": "#101827",
+          "--ink": "#edf2ff",
+          "--muted": "#9aa8c7",
+          "--line": "#2b3753",
+          "--accent": "#8ea2ff",
+          "--accent-dark": "#bdc8ff",
+          "--accent-soft": "#24315e",
+          "--field": "#0f1626",
+          "--button-soft": "#26324d",
+          "--button-soft-hover": "#334060"
+        } : {
+          "--bg": "#f3f0ea",
+          "--panel-rgb": "255, 253, 248",
+          "--panel-strong": "#fbf8f1",
+          "--ink": "#1f2933",
+          "--muted": "#65707d",
+          "--line": "#e2d8ca",
+          "--accent": "#4b5bdc",
+          "--accent-dark": "#2934a3",
+          "--accent-soft": "#e8eaff",
+          "--field": "#fbf8f1",
+          "--button-soft": "#ece6dc",
+          "--button-soft-hover": "#dfd6c8"
+        };
+        var key;
+        for (key in vars) {
+          if (vars.hasOwnProperty(key) && root.style && root.style.setProperty) {
+            root.style.setProperty(key, vars[key]);
+          }
+        }
+        document.body.style.background = dark
+          ? "radial-gradient(circle at top left, rgba(142, 162, 255, 0.2), transparent 34rem), linear-gradient(135deg, #070a12 0%, #0d1220 100%)"
+          : "radial-gradient(circle at top left, rgba(75, 91, 220, 0.22), transparent 34rem), linear-gradient(135deg, #f7f3ec 0%, #f3f0ea 100%)";
+        document.body.style.color = dark ? "#edf2ff" : "#1f2933";
+      }
+
+      function resizeInputToContent() {
+        var input = byId("jcl-input");
+        if (!input) {
+          return;
+        }
+        input.style.height = "auto";
+        input.style.height = Math.max(input.scrollHeight + 6, 430) + "px";
+      }
+
+      function analyze(shouldScroll) {
         var input = byId("jcl-input");
         var results = byId("results");
         var summary = byId("summary");
@@ -249,7 +301,7 @@
         results.innerHTML = html;
         summary.className = "summary";
         summary.innerHTML = '<div class="summary-lead"><strong>Resumen basico generado en modo compatible.</strong><span>Se detectaron ' + lines.length + ' lineas. El modo completo no cargo en este navegador, pero los botones principales ya funcionan.</span></div>';
-        if (summaryPanel && summaryPanel.scrollIntoView) {
+        if (shouldScroll !== false && summaryPanel && summaryPanel.scrollIntoView) {
           summaryPanel.scrollIntoView();
         }
       }
@@ -259,13 +311,17 @@
       on(byId("theme-toggle"), "click", function () {
         setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark");
       });
-      on(byId("analyze-button"), "click", analyze);
+      on(byId("analyze-button"), "click", function () {
+        analyze(true);
+      });
       on(byId("clear-button"), "click", function () {
         var input = byId("jcl-input");
         if (input) {
           input.value = "";
+          input.style.height = "";
         }
       });
+      on(byId("jcl-input"), "input", resizeInputToContent);
       setTheme("dark");
     }());
   </script>
