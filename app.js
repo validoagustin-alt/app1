@@ -1898,7 +1898,7 @@ function applyEditorFrame() {
   if (isMobile) {
     input.style.width = "calc(100vw - 16px)";
     input.style.maxWidth = "calc(100vw - 16px)";
-    input.style.margin = "38px 0 0 calc(50% - 50vw + 8px)";
+    input.style.margin = "14px 0 0 calc(50% - 50vw + 8px)";
     input.style.resize = "none";
     input.style.fontSize = "16px";
     input.style.lineHeight = "1.5";
