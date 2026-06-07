@@ -173,6 +173,22 @@ select {
   font-size: 0.82rem;
 }
 
+.app-version {
+  justify-self: end;
+  align-self: start;
+  min-width: 64px;
+  padding: 8px 12px;
+  border: 1px solid rgba(120, 130, 150, 0.45);
+  border-radius: 999px;
+  background: rgba(7, 11, 18, 0.9);
+  color: #f5f5f5;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 240px;
@@ -386,11 +402,11 @@ textarea:focus {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 20px;
+  gap: 8px;
   width: 100%;
   margin: 16px 0 8px;
-  padding: 0 22px;
-  overflow-x: auto;
+  padding: 0 8px;
+  overflow-x: hidden;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -401,20 +417,21 @@ textarea:focus {
 }
 
 .category-actions button {
-  flex: 0 0 auto;
-  min-height: 68px;
-  padding: 18px 32px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 54px;
+  padding: 12px 8px;
   border: 1.4px solid rgba(120, 130, 150, 0.55);
-  border-radius: 22px;
+  border-radius: 20px;
   background: #070b12;
   color: #f5f5f5;
   box-shadow: none;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: clamp(1.25rem, 5.6vw, 1.55rem);
+  font-size: clamp(0.78rem, 3.35vw, 1.08rem);
   font-weight: 650;
   line-height: 1.1;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1364,7 +1381,7 @@ textarea {
 
 @media (max-width: 640px) {
   .topbar {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr auto !important;
     gap: 12px;
   }
 
@@ -1378,6 +1395,14 @@ textarea {
 
   .topbar span {
     font-size: 0.98rem !important;
+  }
+
+  .app-version {
+    justify-self: end;
+    align-self: start;
+    min-width: 58px;
+    padding: 7px 10px;
+    font-size: 0.74rem;
   }
 }
 
@@ -1625,15 +1650,15 @@ body[data-screen="summary"] .workspace {
 .input-panel .actions {
   display: flex !important;
   grid-template-columns: none !important;
-  gap: 20px;
+  gap: 8px;
   width: 100%;
   margin: 16px 0 8px;
 }
 
 .input-panel .actions button {
   width: auto !important;
-  min-width: max-content;
-  white-space: nowrap;
+  min-width: 0;
+  white-space: normal;
 }
 
 @media (max-width: 920px) {
@@ -1646,39 +1671,42 @@ body[data-screen="summary"] .workspace {
 
 /* Final action pills: keep these after older responsive overrides. */
 .input-panel .category-actions {
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: nowrap !important;
-  gap: 20px !important;
-  width: 100% !important;
-  margin: 16px 0 8px !important;
-  padding: 0 22px !important;
-  overflow-x: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 2.2fr) minmax(0, 1.2fr) !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin: 16px auto 8px !important;
+  padding: 0 !important;
+  overflow-x: clip !important;
   overflow-y: hidden !important;
   background: transparent !important;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
 }
 
 .input-panel .category-actions #summary-button,
 .input-panel .category-actions #analyze-button,
 .input-panel .category-actions #clear-button {
-  flex: 0 0 auto !important;
-  width: auto !important;
-  min-width: max-content !important;
-  min-height: 68px !important;
-  padding: 18px 32px !important;
-  border: 1.4px solid rgba(120, 130, 150, 0.55) !important;
-  border-radius: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  padding: 8px 6px !important;
+  border: 1.2px solid rgba(120, 130, 150, 0.55) !important;
+  border-radius: 18px !important;
   background: #070b12 !important;
   color: #f5f5f5 !important;
   box-shadow: none !important;
   filter: none !important;
-  font-size: clamp(1.25rem, 5.6vw, 1.55rem) !important;
-  font-weight: 650 !important;
-  line-height: 1.1 !important;
+  font-size: clamp(0.66rem, 2.7vw, 0.88rem) !important;
+  font-weight: 620 !important;
+  line-height: 1.05 !important;
   text-align: center !important;
   white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .input-panel .category-actions #summary-button.is-selected,
@@ -1694,8 +1722,28 @@ body[data-screen="summary"] .workspace {
 
 @media (max-width: 920px) {
   .input-panel .category-actions {
-    width: calc(100vw - 16px) !important;
-    margin: 16px 0 8px calc(50% - 50vw + 8px) !important;
-    padding: 0 22px !important;
+    grid-template-columns: minmax(0, 2.05fr) minmax(0, 2.05fr) minmax(0, 1.1fr) !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 16px 0 8px calc(50% - 50vw + 12px) !important;
+  }
+}
+
+@media (max-width: 460px) {
+  .input-panel .category-actions {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr) !important;
+    gap: 5px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 14px 0 8px calc(50% - 50vw + 10px) !important;
+  }
+
+  .input-panel .category-actions #summary-button,
+  .input-panel .category-actions #analyze-button,
+  .input-panel .category-actions #clear-button {
+    min-height: 44px !important;
+    padding: 7px 4px !important;
+    border-radius: 16px !important;
+    font-size: 0.62rem !important;
   }
 }
