@@ -10,8 +10,11 @@ const results = document.querySelector("#results");
 const summary = document.querySelector("#summary");
 const summaryPanel = document.querySelector("#summary-panel");
 const resultsPanel = document.querySelector("#results-panel");
+const dispPalettePanel = document.querySelector("#disp-palette-panel");
+const dispPaletteBack = document.querySelector("#disp-palette-back");
 const backButtons = document.querySelectorAll("[data-back-menu]");
 const lineCount = document.querySelector("#line-count");
+let previousScreen = "explanation";
 
 const exampleJcls = [
   {
@@ -1035,8 +1038,14 @@ function makeResult(lineNumber, rawLine, type, title, explanation, details, warn
   return { lineNumber, rawLine, type, title, explanation, details, warnings, helpItems };
 }
 
+function updateLineCount(count) {
+  if (lineCount) {
+    lineCount.textContent = String(count);
+  }
+}
+
 function renderAnalysis(analysis) {
-  lineCount.textContent = analysis.length;
+  updateLineCount(analysis.length);
 
   if (!analysis.length) {
     results.className = "results empty-state";
@@ -1111,7 +1120,7 @@ function renderLineCard(item) {
 
 function renderHelpItem(helpItem) {
   const details = document.createElement("details");
-  details.className = "syntax-help";
+  details.className = helpItem.key === "DISP" ? "syntax-help syntax-help--disp" : "syntax-help";
 
   const summary = document.createElement("summary");
   summary.textContent = helpItem.buttonLabel;
@@ -1154,7 +1163,23 @@ function renderHelpItem(helpItem) {
   });
 
   details.appendChild(content);
-  return details;
+
+  if (helpItem.key !== "DISP") {
+    return details;
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "disp-help-row";
+
+  const paletteButton = document.createElement("button");
+  paletteButton.className = "disp-mini-button";
+  paletteButton.type = "button";
+  paletteButton.textContent = "20";
+  paletteButton.setAttribute("aria-label", "Abrir pantalla de opciones visuales DISP");
+  paletteButton.addEventListener("click", showDispPaletteScreen);
+
+  wrapper.append(details, paletteButton);
+  return wrapper;
 }
 
 function renderSummary(analysis) {
@@ -1566,6 +1591,9 @@ function setVisibleScreen(screenName) {
   inputPanel.hidden = screenName !== "menu";
   summaryPanel.hidden = screenName !== "summary";
   resultsPanel.hidden = screenName !== "explanation";
+  if (dispPalettePanel) {
+    dispPalettePanel.hidden = screenName !== "disp-palette";
+  }
   document.body.dataset.screen = screenName;
 }
 
@@ -1582,7 +1610,7 @@ function showMenu() {
 
 function showSummaryScreen() {
   const analysis = analyzeJcl(input.value);
-  lineCount.textContent = analysis.length;
+  updateLineCount(analysis.length);
   renderSummary(analysis);
   setVisibleScreen("summary");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1597,8 +1625,26 @@ function showExplanationScreen() {
   scrollToPanel(resultsPanel);
 }
 
+function showDispPaletteScreen() {
+  previousScreen = document.body.dataset.screen || "explanation";
+  setVisibleScreen("disp-palette");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  scrollToPanel(dispPalettePanel);
+}
+
+function showPreviousScreen() {
+  const targetScreen = previousScreen || "explanation";
+  const panels = {
+    menu: inputPanel,
+    summary: summaryPanel,
+    explanation: resultsPanel
+  };
+  setVisibleScreen(targetScreen);
+  scrollToPanel(panels[targetScreen] || resultsPanel);
+}
+
 function resetOutputState() {
-  lineCount.textContent = "0";
+  updateLineCount(0);
   results.className = "results empty-state";
   results.textContent = "El analisis aparecera aqui.";
   summary.className = "summary empty-state";
@@ -1631,7 +1677,7 @@ function loadSelectedExample() {
   const selected = exampleJcls[Number(exampleSelect.value)] || exampleJcls[0];
   input.value = selected.jcl;
   input.scrollTop = 0;
-  lineCount.textContent = input.value.replace(/\r\n/g, "\n").split("\n").length;
+  updateLineCount(input.value.replace(/\r\n/g, "\n").split("\n").length);
   results.className = "results empty-state";
   results.textContent = "Ejemplo cargado. Pulsa Analizar linea por linea para revisarlo completo.";
   summary.className = "summary empty-state";
@@ -1680,6 +1726,10 @@ backButtons.forEach((button) => {
     showMenu();
   });
 });
+
+if (dispPaletteBack) {
+  dispPaletteBack.addEventListener("click", showPreviousScreen);
+}
 
 function applyStableEditorFrame() {
   if (window.innerWidth > 920) {

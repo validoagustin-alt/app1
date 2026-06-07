@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=menu-polish-19">
+  <link rel="stylesheet" href="styles.css?v=disp-palette-20">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -14,14 +14,6 @@
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
     </nav>
-
-    <section class="hero">
-      <div class="hero-card">
-        <span class="metric-kicker">Análisis actual</span>
-        <span class="metric" id="line-count">0</span>
-        <span class="metric-label">líneas analizadas</span>
-      </div>
-    </section>
 
     <section class="workspace">
       <div class="panel input-panel">
@@ -64,9 +56,41 @@
         El análisis aparecerá aquí.
       </div>
     </section>
+
+    <section class="panel disp-palette-panel screen-panel" id="disp-palette-panel" tabindex="-1" hidden>
+      <button class="back-button" id="disp-palette-back" type="button">Menu anterior</button>
+      <div class="panel-header">
+        <div>
+          <h2>Ver sintaxis de DISP</h2>
+          <p>Variantes visuales del boton de ayuda para elegir una opcion de estilo.</p>
+        </div>
+      </div>
+      <div class="disp-button-grid" aria-label="Variantes de boton DISP">
+        <button class="disp-swatch swatch-1" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-2" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-3" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-4" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-5" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-6" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-7" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-8" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-9" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-10" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-11" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-12" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-13" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-14" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-15" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-16" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-17" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-18" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-19" type="button">Ver sintaxis de DISP</button>
+        <button class="disp-swatch swatch-20" type="button">Ver sintaxis de DISP</button>
+      </div>
+    </section>
   </main>
 
-  <script src="app.js?v=menu-polish-19"></script>
+  <script src="app.js?v=disp-palette-20"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -191,6 +215,7 @@
         var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
         var summaryPanel = byId("summary-panel");
         var resultsPanel = byId("results-panel");
+        var dispPalettePanel = byId("disp-palette-panel");
         if (inputPanel) {
           inputPanel.hidden = screenName !== "menu";
         }
@@ -199,6 +224,9 @@
         }
         if (resultsPanel) {
           resultsPanel.hidden = screenName !== "explanation";
+        }
+        if (dispPalettePanel) {
+          dispPalettePanel.hidden = screenName !== "disp-palette";
         }
         document.body.setAttribute("data-screen", screenName);
       }
