@@ -653,8 +653,8 @@ button:hover {
   width: fit-content;
   padding: 9px 13px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
+  background: #fb923c;
+  color: #1f0c00;
   cursor: pointer;
   font-size: 0.86rem;
   font-weight: 800;
@@ -666,7 +666,7 @@ button:hover {
 }
 
 .syntax-help summary:hover {
-  background: var(--accent-dark);
+  filter: saturate(1.12) brightness(1.03);
 }
 
 .syntax-help-content {
@@ -1482,9 +1482,9 @@ body[data-screen="summary"] .workspace {
 }
 
 .syntax-help--disp summary {
-  background: var(--disp-button-bg, #33e6a0) !important;
-  color: var(--disp-button-ink, #06110d) !important;
-  box-shadow: 0 12px 30px rgba(51, 230, 160, 0.22);
+  background: var(--disp-button-bg, #fb923c) !important;
+  color: var(--disp-button-ink, #1f0c00) !important;
+  box-shadow: 0 12px 30px rgba(251, 146, 60, 0.24);
 }
 
 .syntax-help--disp summary:hover {

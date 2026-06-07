@@ -16,8 +16,8 @@ const dispSwatches = document.querySelectorAll(".disp-swatch");
 const backButtons = document.querySelectorAll("[data-back-menu]");
 const lineCount = document.querySelector("#line-count");
 let previousScreen = "explanation";
-const defaultDispButtonColor = "#33e6a0";
-const defaultDispButtonInk = "#06110d";
+const defaultSyntaxButtonColor = "#fb923c";
+const defaultSyntaxButtonInk = "#1f0c00";
 
 const exampleJcls = [
   {
@@ -1681,19 +1681,6 @@ function saveTheme(theme) {
   }
 }
 
-function getSavedDispButtonStyle() {
-  try {
-    if (!window.localStorage) {
-      return null;
-    }
-
-    const saved = JSON.parse(localStorage.getItem("jcl-explainer-disp-button") || "null");
-    return saved && saved.color && saved.ink ? saved : null;
-  } catch (error) {
-    return null;
-  }
-}
-
 function saveDispButtonStyle(style) {
   try {
     if (window.localStorage) {
@@ -1704,8 +1691,8 @@ function saveDispButtonStyle(style) {
   }
 }
 
-function applyDispButtonStyle(style = getSavedDispButtonStyle()) {
-  const selectedStyle = style || { color: defaultDispButtonColor, ink: defaultDispButtonInk };
+function applyDispButtonStyle(style = null) {
+  const selectedStyle = style || { color: defaultSyntaxButtonColor, ink: defaultSyntaxButtonInk };
   document.documentElement.style.setProperty("--disp-button-bg", selectedStyle.color);
   document.documentElement.style.setProperty("--disp-button-ink", selectedStyle.ink);
   document.documentElement.style.setProperty("--disp-button-glow", selectedStyle.color);
@@ -1713,8 +1700,8 @@ function applyDispButtonStyle(style = getSavedDispButtonStyle()) {
 
 function selectDispButtonStyle(button) {
   const style = {
-    color: button.dataset.dispColor || defaultDispButtonColor,
-    ink: button.dataset.dispInk || defaultDispButtonInk
+    color: button.dataset.dispColor || defaultSyntaxButtonColor,
+    ink: button.dataset.dispInk || defaultSyntaxButtonInk
   };
   applyDispButtonStyle(style);
   saveDispButtonStyle(style);
