@@ -1570,3 +1570,26 @@ body[data-screen="summary"] .workspace {
     grid-template-columns: 1fr;
   }
 }
+
+/* Main menu actions above the JCL editor. */
+.input-panel .actions {
+  display: grid !important;
+  grid-template-columns: 3fr 3fr 2fr !important;
+  gap: 10px;
+  width: 100%;
+  margin: 16px 0 14px;
+}
+
+.input-panel .actions button {
+  width: 100% !important;
+  min-width: 0;
+  white-space: normal;
+}
+
+@media (max-width: 920px) {
+  .input-panel .actions {
+    width: calc(100% - 16px) !important;
+    margin: 16px auto 14px !important;
+    grid-template-columns: 3fr 3fr 2fr !important;
+  }
+}
