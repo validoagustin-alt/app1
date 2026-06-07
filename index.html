@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="es" data-theme="dark" class="theme-dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JCL Explainer</title>
+  <link rel="stylesheet" href="styles.css?v=auto-example-18">
+</head>
+<body data-theme="dark" class="theme-dark">
+  <main class="app-shell">
+    <nav class="topbar">
+      <div>
+        <strong>JCL Explainer z/OS helper</strong>
+        <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true">Tema claro</button>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="hero-tags" aria-label="Capacidades principales">
+          <span>DISP / DCB / SPACE</span>
+          <span>SORT FIELDS</span>
+          <span>IDCAMS</span>
+          <span>TWS / Endevor</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <span class="metric-kicker">Análisis actual</span>
+        <span class="metric" id="line-count">0</span>
+        <span class="metric-label">líneas analizadas</span>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel input-panel">
+        <div class="panel-header">
+          <div>
+            <h2>JCL de entrada</h2>
+            <p>Pega aqui el job completo, o elegir un ejemplo del menu desplegable.</p>
+          </div>
+          <div class="example-controls">
+            <label for="example-select">Ejemplos</label>
+            <select id="example-select"></select>
+          </div>
+        </div>
+        <textarea id="jcl-input" spellcheck="false" style="background:#000;color:#33ff99;caret-color:#33ff99;border-color:#1f5c42;" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
+        <div class="actions">
+          <button id="summary-button" type="button">Resumen simplificado</button>
+          <button id="analyze-button" type="button">Analizar JCL</button>
+          <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="panel summary-panel screen-panel" id="summary-panel" tabindex="-1" hidden>
+        <button class="back-button" type="button" data-back-menu>Ir al menu anterior</button>
+        <h2>Resumen simplificado</h2>
+        <div id="summary" class="summary empty-state">
+          Todavía no hay análisis. Pega un JCL y pulsa Analizar JCL.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel results-panel screen-panel" id="results-panel" tabindex="-1" hidden>
+      <button class="back-button" type="button" data-back-menu>Ir al menu anterior</button>
+      <div class="panel-header">
+        <div>
+          <h2>Explicación línea por línea</h2>
+          <p>Cada línea conserva el texto original y añade una lectura funcional.</p>
+        </div>
+      </div>
+      <div id="results" class="results empty-state">
+        El análisis aparecerá aquí.
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js?v=auto-example-18"></script>
+  <script>
+    (function () {
+      if (window.__JCL_APP_READY) {
+        return;
+      }
+
+      var examples = [
+        {
+          title: "SORT nomina",
+          jcl: "//PAYROLL JOB (ACCT),'NOMINA',CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID\n//* EJEMPLO SIMPLE DE JCL PARA PROCESAR NOMINA\n//STEP01  EXEC PGM=SORT\n//SYSOUT  DD SYSOUT=*\n//SORTIN  DD DSN=PROD.PAYROLL.INPUT,DISP=SHR\n//SORTOUT DD DSN=PROD.PAYROLL.SORTED,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(CYL,(5,2),RLSE),\n//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)\n//SYSIN   DD *\n  SORT FIELDS=(1,10,CH,A)\n/*\n//STEP02  EXEC PGM=IEFBR14\n//CLEANUP DD DSN=TEMP.PAYROLL.WORK,DISP=(OLD,DELETE,KEEP)"
+        },
+        {
+          title: "Copiar miembro PDS",
+          jcl: "//CPYMBR  JOB (ACCT),'COPY MEMBER',CLASS=A,MSGCLASS=X\n//* COPIA EL MIEMBRO COBPGM1 DESDE UNA PDS A OTRA\n//COPY    EXEC PGM=IEBCOPY\n//SYSPRINT DD SYSOUT=*\n//SYSUT1   DD DSN=DEV.SOURCE.COBOL,DISP=SHR\n//SYSUT2   DD DSN=QA.SOURCE.COBOL,DISP=SHR\n//SYSIN    DD *\n  COPY INDD=SYSUT1,OUTDD=SYSUT2\n  SELECT MEMBER=COBPGM1\n/*"
+        },
+        {
+          title: "Copiar dataset secuencial",
+          jcl: "//IEBGEN  JOB (ACCT),'COPY SEQ',CLASS=A,MSGCLASS=X\n//STEP01  EXEC PGM=IEBGENER\n//SYSPRINT DD SYSOUT=*\n//SYSUT1   DD DSN=PROD.CUSTOMER.INPUT,DISP=SHR\n//SYSUT2   DD DSN=TEST.CUSTOMER.COPY,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(TRK,(10,5),RLSE),\n//            DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)\n//SYSIN    DD DUMMY"
+        },
+        {
+          title: "Borrar dataset",
+          jcl: "//DELDATA JOB (ACCT),'DELETE DSN',CLASS=A,MSGCLASS=X\n//DELETE  EXEC PGM=IDCAMS\n//SYSPRINT DD SYSOUT=*\n//SYSIN    DD *\n  DELETE TEST.CUSTOMER.OLD PURGE\n  SET MAXCC=0\n/*"
+        },
+        {
+          title: "Crear VSAM KSDS",
+          jcl: "//DEFVSAM JOB (ACCT),'DEFINE VSAM',CLASS=A,MSGCLASS=X\n//IDCAMS  EXEC PGM=IDCAMS\n//SYSPRINT DD SYSOUT=*\n//SYSIN    DD *\n  DEFINE CLUSTER (NAME(TEST.CUST.KSDS) -\n                  INDEXED -\n                  KEYS(10 0) -\n                  RECORDSIZE(80 80) -\n                  TRACKS(5 2)) -\n         DATA  (NAME(TEST.CUST.KSDS.DATA)) -\n         INDEX (NAME(TEST.CUST.KSDS.INDEX))\n/*"
+        },
+        {
+          title: "Renombrar dataset",
+          jcl: "//RENDSN  JOB (ACCT),'RENAME DSN',CLASS=A,MSGCLASS=X\n//ALTER   EXEC PGM=IDCAMS\n//SYSPRINT DD SYSOUT=*\n//SYSIN    DD *\n  ALTER TEST.CUSTOMER.COPY NEWNAME(TEST.CUSTOMER.COPY.BKUP)\n/*"
+        },
+        {
+          title: "Crear PDS",
+          jcl: "//CRTPDS  JOB (ACCT),'CREATE PDS',CLASS=A,MSGCLASS=X\n//STEP01  EXEC PGM=IEFBR14\n//NEWPDS  DD DSN=DEV.SOURCE.COBOL,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(CYL,(2,1,20),RLSE),\n//            DCB=(DSORG=PO,RECFM=FB,LRECL=80,BLKSIZE=0)"
+        },
+        {
+          title: "GDG nueva generacion",
+          jcl: "//GDGNEW  JOB (ACCT),'NEW GDG',CLASS=A,MSGCLASS=X\n//STEP01  EXEC PGM=IEBGENER\n//SYSPRINT DD SYSOUT=*\n//SYSUT1   DD DSN=PROD.DAILY.EXTRACT,DISP=SHR\n//SYSUT2   DD DSN=PROD.DAILY.GDG(+1),\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(CYL,(3,1),RLSE),\n//            DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)\n//SYSIN    DD DUMMY"
+        },
+        {
+          title: "TWS/OPC tailoring",
+          jcl: "//TWSJOB  JOB (ACCT),'TWS SAMPLE',CLASS=A,MSGCLASS=X\n//*%OPC SCAN\n//*%OPC SETVAR TBL=PAYROLL\n//STEP01  EXEC PGM=IEFBR14\n//REPORT  DD DSN=PAYROLL.REPORT.&OADATE,\n//            DISP=(NEW,CATLG,DELETE),\n//            SPACE=(TRK,(5,2),RLSE),\n//            DCB=(RECFM=FB,LRECL=133,BLKSIZE=0)"
+        },
+        {
+          title: "Endevor batch SCL",
+          jcl: "//ENDVOR  JOB (ACCT),'ENDEVOR',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  ADD ELEMENT 'PAYCALC'\n      FROM DSNAME 'DEV.SOURCE.COBOL' .\n/*"
+        }
+      ];
+
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function on(el, eventName, handler) {
+        if (!el) {
+          return;
+        }
+        if (el.addEventListener) {
+          el.addEventListener(eventName, handler, false);
+        } else if (el.attachEvent) {
+          el.attachEvent("on" + eventName, handler);
+        }
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function populateExamples() {
+        var select = byId("example-select");
+        var i;
+        var option;
+        if (!select) {
+          return;
+        }
+        select.innerHTML = "";
+        option = document.createElement("option");
+        option.value = "";
+        option.appendChild(document.createTextNode("Elegir ejemplo..."));
+        option.selected = true;
+        option.disabled = true;
+        select.appendChild(option);
+        for (i = 0; i < examples.length; i += 1) {
+          option = document.createElement("option");
+          option.value = String(i);
+          option.appendChild(document.createTextNode((i + 1) + ". " + examples[i].title));
+          select.appendChild(option);
+        }
+      }
+
+      function loadExample() {
+        var select = byId("example-select");
+        var input = byId("jcl-input");
+        var selected;
+        if (!select || !input) {
+          return;
+        }
+        if (select.value === "") {
+          return;
+        }
+        selected = examples[Number(select.value)] || examples[0];
+        input.value = selected.jcl;
+        input.scrollTop = 0;
+        if (byId("line-count")) {
+          byId("line-count").innerHTML = String(input.value.replace(/\r\n/g, "\n").split("\n").length);
+        }
+        if (byId("results")) {
+          byId("results").className = "results empty-state";
+          byId("results").innerHTML = "Ejemplo cargado. Pulsa Analizar JCL para revisarlo linea por linea.";
+        }
+        if (byId("summary")) {
+          byId("summary").className = "summary empty-state";
+          byId("summary").innerHTML = "Ejemplo cargado en el editor.";
+        }
+        showFallbackScreen("menu");
+      }
+
+      function showFallbackScreen(screenName) {
+        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        var summaryPanel = byId("summary-panel");
+        var resultsPanel = byId("results-panel");
+        if (inputPanel) {
+          inputPanel.hidden = screenName !== "menu";
+        }
+        if (summaryPanel) {
+          summaryPanel.hidden = screenName !== "summary";
+        }
+        if (resultsPanel) {
+          resultsPanel.hidden = screenName !== "explanation";
+        }
+      }
+
+      function scrollFallbackPanel(panel) {
+        if (panel && panel.scrollIntoView) {
+          panel.scrollIntoView();
+        }
+        if (panel && panel.focus) {
+          try {
+            panel.focus();
+          } catch (error) {}
+        }
+      }
+
+      function showFallbackSummary() {
+        var panel = byId("summary-panel");
+        analyze(false);
+        showFallbackScreen("summary");
+        scrollFallbackPanel(panel);
+      }
+
+      function showFallbackExplanation() {
+        var panel = byId("results-panel");
+        analyze(false);
+        showFallbackScreen("explanation");
+        scrollFallbackPanel(panel);
+      }
+
+      function setTheme(theme) {
+        var button = byId("theme-toggle");
+        var dark = theme === "dark";
+        applyThemeState(dark);
+        if (button) {
+          button.innerHTML = dark ? "Tema claro" : "Tema oscuro";
+          button.setAttribute("aria-pressed", dark ? "true" : "false");
+        }
+      }
+
+      function applyThemeState(dark) {
+        setThemeOnElement(document.documentElement, dark);
+        setThemeOnElement(document.body, dark);
+      }
+
+      function setThemeOnElement(element, dark) {
+        var theme = dark ? "dark" : "light";
+        if (!element) {
+          return;
+        }
+        element.setAttribute("data-theme", theme);
+        if (element.classList) {
+          if (dark) {
+            element.classList.add("theme-dark");
+            element.classList.remove("theme-light");
+          } else {
+            element.classList.add("theme-light");
+            element.classList.remove("theme-dark");
+          }
+        } else {
+          element.className = dark ? "theme-dark" : "theme-light";
+        }
+        applyInlineTheme(dark);
+      }
+
+      function applyInlineTheme(dark) {
+        var root = document.documentElement;
+        var vars = dark ? {
+          "--bg": "#07110f",
+          "--panel-rgb": "13, 21, 27",
+          "--panel-strong": "#111820",
+          "--ink": "#f5f8ff",
+          "--muted": "#9ca8b8",
+          "--line": "#23313d",
+          "--accent": "#33e6a0",
+          "--accent-dark": "#7df7d0",
+          "--accent-soft": "#102f29",
+          "--field": "#081016",
+          "--button-soft": "#0b1218",
+          "--button-soft-hover": "#14212b"
+        } : {
+          "--bg": "#f3f0ea",
+          "--panel-rgb": "255, 253, 248",
+          "--panel-strong": "#fbf8f1",
+          "--ink": "#1f2933",
+          "--muted": "#65707d",
+          "--line": "#e2d8ca",
+          "--accent": "#4b5bdc",
+          "--accent-dark": "#2934a3",
+          "--accent-soft": "#e8eaff",
+          "--field": "#fbf8f1",
+          "--button-soft": "#ece6dc",
+          "--button-soft-hover": "#dfd6c8"
+        };
+        var key;
+        for (key in vars) {
+          if (vars.hasOwnProperty(key) && root.style && root.style.setProperty) {
+            root.style.setProperty(key, vars[key]);
+          }
+        }
+        document.body.style.background = dark
+          ? "radial-gradient(circle at 22% 0%, rgba(51, 230, 160, 0.16), transparent 28rem), radial-gradient(circle at 74% 4%, rgba(59, 130, 246, 0.16), transparent 30rem), linear-gradient(120deg, rgba(0, 55, 38, 0.72) 0%, rgba(5, 12, 18, 0.96) 42%, #07101a 100%)"
+          : "radial-gradient(circle at top left, rgba(75, 91, 220, 0.22), transparent 34rem), linear-gradient(135deg, #f7f3ec 0%, #f3f0ea 100%)";
+        document.body.style.color = dark ? "#edf2ff" : "#1f2933";
+      }
+
+      function analyze(shouldScroll) {
+        var input = byId("jcl-input");
+        var results = byId("results");
+        var summary = byId("summary");
+        var lineCount = byId("line-count");
+        var summaryPanel = byId("summary-panel");
+        var lines;
+        var html = "";
+        var i;
+        var line;
+        var type;
+        if (!input || !results || !summary) {
+          return;
+        }
+        lines = input.value.replace(/\r\n/g, "\n").split("\n");
+        if (lineCount) {
+          lineCount.innerHTML = String(lines.length);
+        }
+        for (i = 0; i < lines.length; i += 1) {
+          line = lines[i];
+          type = "Texto";
+          if (line.indexOf("//*%OPC") === 0) { type = "TWS/OPC"; }
+          else if (line.indexOf("//*") === 0) { type = "Comentario"; }
+          else if (line.indexOf("//") === 0 && line.indexOf(" JOB ") > -1) { type = "JOB"; }
+          else if (line.indexOf("//") === 0 && line.indexOf(" EXEC ") > -1) { type = "EXEC"; }
+          else if (line.indexOf("//") === 0 && line.indexOf(" DD ") > -1) { type = "DD"; }
+          else if (/^\s*SORT\s+FIELDS=/i.test(line)) { type = "SORT"; }
+          else if (/^\s*(DELETE|DEFINE|ALTER|SET)\b/i.test(line)) { type = "IDCAMS"; }
+          else if (/^\s*(SET FROM|ADD ELEMENT|UPDATE ELEMENT|GENERATE ELEMENT|MOVE ELEMENT|RETRIEVE ELEMENT)\b/i.test(line)) { type = "Endevor SCL"; }
+          html += '<article class="line-card"><div class="line-number">' + (i + 1) + '</div><div><pre class="line-code">' + escapeHtml(line || " ") + '</pre><div class="line-title"><span class="badge">' + type + '</span><strong>Fallback iPhone</strong></div><p class="line-explanation">Analisis basico compatible con Safari/iPhone. Recarga en desktop para la explicacion completa si lo necesitas.</p></div></article>';
+        }
+        results.className = "results";
+        results.innerHTML = html;
+        summary.className = "summary";
+        summary.innerHTML = '<div class="summary-lead"><strong>Resumen basico generado en modo compatible.</strong><span>Se detectaron ' + lines.length + ' lineas. El modo completo no cargo en este navegador, pero los botones principales ya funcionan.</span></div>';
+        if (shouldScroll !== false && summaryPanel && summaryPanel.scrollIntoView) {
+          summaryPanel.scrollIntoView();
+        }
+      }
+
+      function applyStableEditorFrame() {
+        var input = byId("jcl-input");
+        if (!input || window.innerWidth > 920) {
+          return;
+        }
+        input.style.width = "calc(100vw - 16px)";
+        input.style.maxWidth = "calc(100vw - 16px)";
+        input.style.height = "560px";
+        input.style.minHeight = "560px";
+        input.style.maxHeight = "none";
+        input.style.margin = "38px 0 0 calc(50% - 50vw + 8px)";
+        input.style.resize = "none";
+        input.style.overflow = "auto";
+        input.style.fontSize = "16px";
+        input.style.lineHeight = "1.5";
+        input.style.webkitTextSizeAdjust = "100%";
+        input.style.backgroundColor = "#000";
+        input.style.color = "#33ff99";
+        input.style.caretColor = "#33ff99";
+        input.style.borderColor = "#1f5c42";
+      }
+
+      populateExamples();
+      on(byId("example-select"), "change", loadExample);
+      on(byId("sample-button"), "click", loadExample);
+      on(byId("summary-button"), "click", showFallbackSummary);
+      on(byId("theme-toggle"), "click", function () {
+        setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+      on(byId("analyze-button"), "click", function () {
+        showFallbackExplanation();
+      });
+      on(byId("clear-button"), "click", function () {
+        var input = byId("jcl-input");
+        if (input) {
+          input.value = "";
+        }
+        if (byId("line-count")) {
+          byId("line-count").innerHTML = "0";
+        }
+        showFallbackScreen("menu");
+      });
+      if (document.querySelectorAll) {
+        var backButtons = document.querySelectorAll("[data-back-menu]");
+        var i;
+        for (i = 0; i < backButtons.length; i += 1) {
+          on(backButtons[i], "click", function () {
+            showFallbackScreen("menu");
+            scrollFallbackPanel(document.querySelector(".input-panel"));
+          });
+        }
+      }
+      setTheme("dark");
+      applyStableEditorFrame();
+      showFallbackScreen("menu");
+    }());
+  </script>
+</body>
+</html>
