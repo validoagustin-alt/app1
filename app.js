@@ -12,6 +12,7 @@ const summaryPanel = document.querySelector("#summary-panel");
 const resultsPanel = document.querySelector("#results-panel");
 const backButtons = document.querySelectorAll("[data-back-menu]");
 const lineCount = document.querySelector("#line-count");
+const summaryColorOptions = document.querySelectorAll("[data-summary-button-bg]");
 
 const exampleJcls = [
   {
@@ -1532,6 +1533,39 @@ function saveTheme(theme) {
   }
 }
 
+function applySummaryButtonColor(option) {
+  if (!summaryButton || !option) {
+    return;
+  }
+
+  const background = option.getAttribute("data-summary-button-bg");
+  const color = option.getAttribute("data-summary-button-fg") || "#ffffff";
+  const shadow = option.getAttribute("data-summary-button-shadow") || "rgba(51, 230, 160, 0.22)";
+
+  summaryButton.style.background = background;
+  summaryButton.style.color = color;
+  summaryButton.style.boxShadow = `0 14px 40px ${shadow}`;
+
+  summaryColorOptions.forEach((button) => {
+    const isSelected = button === option;
+    toggleClass(button, "is-selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+}
+
+function initializeSummaryColorOptions() {
+  if (!summaryColorOptions.length) {
+    return;
+  }
+
+  applySummaryButtonColor(document.querySelector(".summary-color-swatch.is-selected") || summaryColorOptions[0]);
+  summaryColorOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+      applySummaryButtonColor(button);
+    });
+  });
+}
+
 function scrollToSummary() {
   try {
     summaryPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1636,6 +1670,7 @@ function loadSelectedExample() {
 
 populateExamples();
 setTheme("dark");
+initializeSummaryColorOptions();
 applyStableEditorFrame();
 setVisibleScreen("menu");
 
