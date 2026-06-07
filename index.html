@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=screen-flow-17">
+  <link rel="stylesheet" href="styles.css?v=auto-example-18">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -42,13 +42,12 @@
           <div class="example-controls">
             <label for="example-select">Ejemplos</label>
             <select id="example-select"></select>
-            <button class="ghost-button" id="sample-button" type="button">Cargar ejemplo</button>
           </div>
         </div>
         <textarea id="jcl-input" spellcheck="false" style="background:#000;color:#33ff99;caret-color:#33ff99;border-color:#1f5c42;" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
         <div class="actions">
           <button id="summary-button" type="button">Resumen simplificado</button>
-          <button id="analyze-button" type="button">Explicar JCL</button>
+          <button id="analyze-button" type="button">Analizar JCL</button>
           <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
         </div>
       </div>
@@ -57,7 +56,7 @@
         <button class="back-button" type="button" data-back-menu>Ir al menu anterior</button>
         <h2>Resumen simplificado</h2>
         <div id="summary" class="summary empty-state">
-          Todavía no hay análisis. Pega un JCL y pulsa “Explicar JCL”.
+          Todavía no hay análisis. Pega un JCL y pulsa Analizar JCL.
         </div>
       </div>
     </section>
@@ -76,7 +75,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=screen-flow-17"></script>
+  <script src="app.js?v=auto-example-18"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -156,6 +155,12 @@
           return;
         }
         select.innerHTML = "";
+        option = document.createElement("option");
+        option.value = "";
+        option.appendChild(document.createTextNode("Elegir ejemplo..."));
+        option.selected = true;
+        option.disabled = true;
+        select.appendChild(option);
         for (i = 0; i < examples.length; i += 1) {
           option = document.createElement("option");
           option.value = String(i);
@@ -171,6 +176,9 @@
         if (!select || !input) {
           return;
         }
+        if (select.value === "") {
+          return;
+        }
         selected = examples[Number(select.value)] || examples[0];
         input.value = selected.jcl;
         input.scrollTop = 0;
@@ -179,7 +187,7 @@
         }
         if (byId("results")) {
           byId("results").className = "results empty-state";
-          byId("results").innerHTML = "Ejemplo cargado. Pulsa &ldquo;Explicar JCL&rdquo; para analizarlo.";
+          byId("results").innerHTML = "Ejemplo cargado. Pulsa Analizar JCL para revisarlo linea por linea.";
         }
         if (byId("summary")) {
           byId("summary").className = "summary empty-state";
@@ -367,6 +375,7 @@
       }
 
       populateExamples();
+      on(byId("example-select"), "change", loadExample);
       on(byId("sample-button"), "click", loadExample);
       on(byId("summary-button"), "click", showFallbackSummary);
       on(byId("theme-toggle"), "click", function () {
