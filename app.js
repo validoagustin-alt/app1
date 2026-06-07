@@ -15,7 +15,9 @@ const dispPaletteBack = document.querySelector("#disp-palette-back");
 const dispSwatches = document.querySelectorAll(".disp-swatch");
 const backButtons = document.querySelectorAll("[data-back-menu]");
 const lineCount = document.querySelector("#line-count");
+const actionCategoryButtons = document.querySelectorAll(".category-actions [data-category]");
 let previousScreen = "explanation";
+let selectedCategory = "";
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1792,6 +1794,15 @@ function showPreviousScreen() {
   scrollToPanel(panels[targetScreen] || resultsPanel);
 }
 
+function setSelectedCategory(category) {
+  selectedCategory = category;
+  actionCategoryButtons.forEach((button) => {
+    const isSelected = button.dataset.category === selectedCategory;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+  });
+}
+
 function resetOutputState() {
   updateLineCount(0);
   results.className = "results empty-state";
@@ -1842,14 +1853,17 @@ applyEditorFrame();
 setVisibleScreen("menu");
 
 summaryButton.addEventListener("click", () => {
+  setSelectedCategory("summary");
   showSummaryScreen();
 });
 
 analyzeButton.addEventListener("click", () => {
+  setSelectedCategory("line-by-line");
   showExplanationScreen();
 });
 
 clearButton.addEventListener("click", () => {
+  setSelectedCategory("clear");
   input.value = "";
   resetOutputState();
   applyEditorFrame();

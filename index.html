@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=closer-editor-30">
+  <link rel="stylesheet" href="styles.css?v=pill-actions-31">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -27,10 +27,10 @@
             <select id="example-select"></select>
           </div>
         </div>
-        <div class="actions">
-          <button id="summary-button" type="button">Resumen simplificado</button>
-          <button id="analyze-button" type="button">Analizar linea por linea</button>
-          <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
+        <div class="actions category-actions" role="group" aria-label="Opciones de analisis">
+          <button id="summary-button" type="button" data-category="summary" aria-pressed="false">Resumen simplificado</button>
+          <button id="analyze-button" type="button" data-category="line-by-line" aria-pressed="false">Analizar linea por linea</button>
+          <button class="secondary-button" id="clear-button" type="button" data-category="clear" aria-pressed="false">Limpiar</button>
         </div>
         <textarea id="jcl-input" spellcheck="false" style="background:#000;color:#33ff99;caret-color:#33ff99;border-color:#1f5c42;" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
       </div>
@@ -90,7 +90,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=closer-editor-30"></script>
+  <script src="app.js?v=pill-actions-31"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {

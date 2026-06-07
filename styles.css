@@ -382,6 +382,56 @@ textarea:focus {
   margin-top: 16px;
 }
 
+.category-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 20px;
+  width: 100%;
+  margin: 16px 0 8px;
+  padding: 0 22px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.category-actions button {
+  flex: 0 0 auto;
+  min-height: 68px;
+  padding: 18px 32px;
+  border: 1.4px solid rgba(120, 130, 150, 0.55);
+  border-radius: 22px;
+  background: #070b12;
+  color: #f5f5f5;
+  box-shadow: none;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(1.25rem, 5.6vw, 1.55rem);
+  font-weight: 650;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.category-actions button:hover {
+  background: #0b111b;
+  border-color: rgba(150, 162, 186, 0.7);
+  box-shadow: none;
+  filter: none;
+}
+
+.category-actions button.is-selected,
+.category-actions button[aria-pressed="true"] {
+  border-color: rgba(205, 214, 232, 0.86);
+  background: #101722;
+  color: #ffffff;
+}
+
 button {
   border: 0;
   border-radius: 999px;
@@ -1364,9 +1414,9 @@ textarea {
   padding: 14px 18px;
 }
 
-#summary-button,
-#analyze-button,
-#clear-button {
+#summary-button:not(.category-actions button),
+#analyze-button:not(.category-actions button),
+#clear-button:not(.category-actions button) {
   border: 1px solid #0e7490;
   color: #ecfeff;
   background: linear-gradient(135deg, #06b6d4, #0e7490);
@@ -1573,23 +1623,79 @@ body[data-screen="summary"] .workspace {
 
 /* Main menu actions above the JCL editor. */
 .input-panel .actions {
-  display: grid !important;
-  grid-template-columns: 3fr 3fr 2fr !important;
-  gap: 10px;
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 20px;
   width: 100%;
-  margin: 16px 0 6px;
+  margin: 16px 0 8px;
 }
 
 .input-panel .actions button {
-  width: 100% !important;
-  min-width: 0;
-  white-space: normal;
+  width: auto !important;
+  min-width: max-content;
+  white-space: nowrap;
 }
 
 @media (max-width: 920px) {
   .input-panel .actions {
-    width: calc(100% - 16px) !important;
-    margin: 16px auto 6px !important;
-    grid-template-columns: 3fr 3fr 2fr !important;
+    width: calc(100vw - 16px) !important;
+    margin: 16px 0 8px calc(50% - 50vw + 8px) !important;
+    grid-template-columns: none !important;
+  }
+}
+
+/* Final action pills: keep these after older responsive overrides. */
+.input-panel .category-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 20px !important;
+  width: 100% !important;
+  margin: 16px 0 8px !important;
+  padding: 0 22px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  background: transparent !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.input-panel .category-actions #summary-button,
+.input-panel .category-actions #analyze-button,
+.input-panel .category-actions #clear-button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  min-height: 68px !important;
+  padding: 18px 32px !important;
+  border: 1.4px solid rgba(120, 130, 150, 0.55) !important;
+  border-radius: 22px !important;
+  background: #070b12 !important;
+  color: #f5f5f5 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font-size: clamp(1.25rem, 5.6vw, 1.55rem) !important;
+  font-weight: 650 !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.input-panel .category-actions #summary-button.is-selected,
+.input-panel .category-actions #analyze-button.is-selected,
+.input-panel .category-actions #clear-button.is-selected,
+.input-panel .category-actions #summary-button[aria-pressed="true"],
+.input-panel .category-actions #analyze-button[aria-pressed="true"],
+.input-panel .category-actions #clear-button[aria-pressed="true"] {
+  border-color: rgba(205, 214, 232, 0.86) !important;
+  background: #101722 !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 920px) {
+  .input-panel .category-actions {
+    width: calc(100vw - 16px) !important;
+    margin: 16px 0 8px calc(50% - 50vw + 8px) !important;
+    padding: 0 22px !important;
   }
 }
