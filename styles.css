@@ -88,20 +88,13 @@ body::before {
   z-index: 0;
   background-image: var(--app-background-image);
   background-size: cover;
-  background-position: center top;
+  background-position: center center;
   background-repeat: no-repeat;
-  opacity: 0.42;
+  opacity: 1;
 }
 
 body::after {
-  z-index: 0;
-  background:
-    linear-gradient(135deg, rgba(247, 243, 236, 0.74) 0%, rgba(243, 240, 234, 0.82) 100%),
-    radial-gradient(circle at top left, rgba(75, 91, 220, 0.16), transparent 34rem),
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: auto, auto, 42px 42px, 42px 42px;
-  background-position: center, top left, 0 0, 0 0;
+  content: none;
 }
 
 html[data-theme="dark"] body,
@@ -888,7 +881,7 @@ html[data-theme="dark"] body::before,
 html.theme-dark body::before,
 body[data-theme="dark"]::before,
 body.theme-dark::before {
-  opacity: 0.52;
+  opacity: 1;
   background-position: center center;
 }
 
@@ -896,13 +889,7 @@ html[data-theme="dark"] body::after,
 html.theme-dark body::after,
 body[data-theme="dark"]::after,
 body.theme-dark::after {
-  background:
-    linear-gradient(120deg, rgba(0, 0, 0, 0.48) 0%, rgba(5, 12, 18, 0.72) 42%, rgba(7, 16, 26, 0.84) 100%),
-    radial-gradient(circle at 22% 0%, rgba(255, 59, 59, 0.18), transparent 28rem),
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: auto, auto, 42px 42px, 42px 42px;
-  background-position: center, 22% 0%, 0 0, 0 0;
+  content: none;
 }
 
 .app-shell {
