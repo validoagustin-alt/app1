@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-42">
+  <link rel="stylesheet" href="styles.css?v=app-version-43">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v42</div>
+      <div class="app-version" aria-label="Version de la app">v43</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-42"></script>
+  <script src="app.js?v=app-version-43"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -276,43 +276,143 @@
         scrollFallbackPanel(inputPanel);
       }
 
+      function getFallbackActivePanel() {
+        var currentScreen = document.body.getAttribute("data-screen") || "menu";
+        if (currentScreen === "summary") {
+          return byId("summary-panel");
+        }
+        if (currentScreen === "explanation") {
+          return byId("results-panel");
+        }
+        if (currentScreen === "disp-palette") {
+          return byId("disp-palette-panel");
+        }
+        return null;
+      }
+
+      function applyFallbackSwipeOffset(panel, offset, withTransition) {
+        if (!panel) {
+          return;
+        }
+        panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
+        panel.style.transform = "translateX(" + Math.max(0, offset) + "px)";
+        panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
+      }
+
+      function resetFallbackSwipePanel(panel) {
+        if (!panel) {
+          return;
+        }
+        panel.style.transition = "";
+        panel.style.transform = "";
+        panel.style.boxShadow = "";
+      }
+
       function setupFallbackBackSwipeGesture() {
         var startX = 0;
         var startY = 0;
         var tracking = false;
+        var dragging = false;
+        var panel = null;
 
         on(document, "touchstart", function (event) {
           var currentScreen = document.body.getAttribute("data-screen") || "menu";
           var touch;
           if (!event.touches || event.touches.length !== 1 || currentScreen === "menu") {
             tracking = false;
+            dragging = false;
+            panel = null;
             return;
           }
           touch = event.touches[0];
           startX = touch.clientX;
           startY = touch.clientY;
-          tracking = startX <= 96;
+          panel = getFallbackActivePanel();
+          dragging = false;
+          tracking = startX <= 96 && !!panel;
+        });
+
+        on(document, "touchmove", function (event) {
+          var touch;
+          var deltaX;
+          var deltaY;
+          if (!tracking || !panel || !event.touches || event.touches.length !== 1) {
+            return;
+          }
+          touch = event.touches[0];
+          deltaX = touch.clientX - startX;
+          deltaY = Math.abs(touch.clientY - startY);
+          if (deltaX <= 0) {
+            if (dragging) {
+              applyFallbackSwipeOffset(panel, 0, false);
+            }
+            return;
+          }
+          if (!dragging) {
+            if (deltaY > 16 && deltaY > deltaX) {
+              tracking = false;
+              panel = null;
+              return;
+            }
+            if (deltaX < 14 || deltaX < deltaY) {
+              return;
+            }
+            dragging = true;
+          }
+          if (event.preventDefault) {
+            event.preventDefault();
+          }
+          applyFallbackSwipeOffset(panel, Math.min(deltaX, window.innerWidth * 0.94), false);
         });
 
         on(document, "touchend", function (event) {
           var touch;
           var deltaX;
           var deltaY;
+          var activePanel;
+          var shouldNavigate;
           if (!tracking || !event.changedTouches || event.changedTouches.length !== 1) {
             tracking = false;
+            dragging = false;
+            panel = null;
             return;
           }
           touch = event.changedTouches[0];
           deltaX = touch.clientX - startX;
           deltaY = Math.abs(touch.clientY - startY);
+          activePanel = panel;
+          shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
           tracking = false;
-          if (deltaX >= 110 && deltaY <= 90) {
-            handleFallbackBackNavigation();
+          dragging = false;
+          panel = null;
+          if (!activePanel) {
+            return;
           }
+          if (shouldNavigate) {
+            applyFallbackSwipeOffset(activePanel, window.innerWidth, true);
+            window.setTimeout(function () {
+              resetFallbackSwipePanel(activePanel);
+              handleFallbackBackNavigation();
+            }, 180);
+            return;
+          }
+          applyFallbackSwipeOffset(activePanel, 0, true);
+          window.setTimeout(function () {
+            resetFallbackSwipePanel(activePanel);
+          }, 220);
         });
 
         on(document, "touchcancel", function () {
+          var activePanel = panel;
+          if (activePanel) {
+            applyFallbackSwipeOffset(activePanel, 0, true);
+            window.setTimeout(function () {
+              resetFallbackSwipePanel(activePanel);
+            }, 220);
+          }
           tracking = false;
+          dragging = false;
+          panel = null;
         });
       }
 
