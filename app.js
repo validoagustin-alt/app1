@@ -1190,15 +1190,11 @@ function renderLineCard(item) {
   code.className = "line-code";
   code.textContent = item.rawLine || " ";
 
-  const title = document.createElement("div");
-  title.className = "line-title";
-  title.innerHTML = `<strong>${escapeHtml(item.title)}</strong>`;
-
   const explanation = document.createElement("p");
   explanation.className = "line-explanation";
   explanation.textContent = item.explanation;
 
-  body.append(code, title, explanation);
+  body.append(code, explanation);
 
   if (item.details.length) {
     const details = document.createElement("div");

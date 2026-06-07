@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=sysin-detail-22">
+  <link rel="stylesheet" href="styles.css?v=no-line-title-23">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -90,7 +90,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=sysin-detail-22"></script>
+  <script src="app.js?v=no-line-title-23"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -363,7 +363,7 @@
           else if (/^\s*SORT\s+FIELDS=/i.test(line)) { type = "SORT"; }
           else if (/^\s*(DELETE|DEFINE|ALTER|SET)\b/i.test(line)) { type = "IDCAMS"; }
           else if (/^\s*(SET FROM|ADD ELEMENT|UPDATE ELEMENT|GENERATE ELEMENT|MOVE ELEMENT|RETRIEVE ELEMENT)\b/i.test(line)) { type = "Endevor SCL"; }
-          html += '<article class="line-card"><div class="line-number">' + (i + 1) + '</div><div><pre class="line-code">' + escapeHtml(line || " ") + '</pre><div class="line-title"><strong>Fallback iPhone</strong></div><p class="line-explanation">Analisis basico compatible con Safari/iPhone. Recarga en desktop para la explicacion completa si lo necesitas.</p></div></article>';
+          html += '<article class="line-card"><div class="line-number">' + (i + 1) + '</div><div><pre class="line-code">' + escapeHtml(line || " ") + '</pre><p class="line-explanation">Analisis basico compatible con Safari/iPhone. Recarga en desktop para la explicacion completa si lo necesitas.</p></div></article>';
         }
         results.className = "results";
         results.innerHTML = html;
