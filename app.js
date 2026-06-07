@@ -1890,17 +1890,10 @@ dispSwatches.forEach((button) => {
 });
 
 function applyEditorFrame() {
-  const lineCount = Math.max(1, input.value.replace(/\r\n/g, "\n").split("\n").length);
   const isMobile = window.innerWidth <= 920;
-  const lineHeight = isMobile ? 24 : 25;
-  const verticalPadding = isMobile ? 28 : 40;
   const minHeight = isMobile ? 220 : 260;
-  const desiredHeight = Math.max(minHeight, (lineCount * lineHeight) + verticalPadding);
 
-  input.style.height = `${desiredHeight}px`;
   input.style.minHeight = `${minHeight}px`;
-  input.style.maxHeight = "none";
-  input.style.overflowY = "hidden";
 
   if (isMobile) {
     input.style.width = "calc(100vw - 16px)";
@@ -1923,6 +1916,12 @@ function applyEditorFrame() {
   input.style.color = "#33ff99";
   input.style.caretColor = "#33ff99";
   input.style.borderColor = "#1f5c42";
+  input.style.maxHeight = "none";
+  input.style.overflowY = "hidden";
+  input.style.height = "auto";
+
+  const desiredHeight = Math.max(minHeight, input.scrollHeight + 2);
+  input.style.height = `${desiredHeight}px`;
 }
 
 input.addEventListener("keydown", (event) => {

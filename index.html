@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=full-editor-height-27">
+  <link rel="stylesheet" href="styles.css?v=scrollheight-editor-28">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -90,7 +90,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=full-editor-height-27"></script>
+  <script src="app.js?v=scrollheight-editor-28"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -382,13 +382,8 @@
         }
         input.style.width = "calc(100vw - 16px)";
         input.style.maxWidth = "calc(100vw - 16px)";
-        var lines = Math.max(1, input.value.replace(/\r\n/g, "\n").split("\n").length);
-        var lineHeight = 24;
         var minHeight = 220;
-        var wantedHeight = Math.max(minHeight, (lines * lineHeight) + 28);
-        input.style.height = wantedHeight + "px";
         input.style.minHeight = minHeight + "px";
-        input.style.maxHeight = "none";
         input.style.margin = "38px 0 0 calc(50% - 50vw + 8px)";
         input.style.resize = "none";
         input.style.overflowX = "auto";
@@ -400,6 +395,10 @@
         input.style.color = "#33ff99";
         input.style.caretColor = "#33ff99";
         input.style.borderColor = "#1f5c42";
+        input.style.maxHeight = "none";
+        input.style.overflowY = "hidden";
+        input.style.height = "auto";
+        input.style.height = Math.max(minHeight, input.scrollHeight + 2) + "px";
       }
 
       populateExamples();
