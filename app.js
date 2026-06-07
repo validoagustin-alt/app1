@@ -1895,13 +1895,12 @@ function applyEditorFrame() {
   const lineHeight = isMobile ? 24 : 25;
   const verticalPadding = isMobile ? 28 : 40;
   const minHeight = isMobile ? 220 : 260;
-  const maxHeight = Math.max(minHeight, Math.floor(window.innerHeight * (isMobile ? 0.72 : 0.78)));
-  const desiredHeight = Math.min(maxHeight, Math.max(minHeight, (lineCount * lineHeight) + verticalPadding));
+  const desiredHeight = Math.max(minHeight, (lineCount * lineHeight) + verticalPadding);
 
   input.style.height = `${desiredHeight}px`;
   input.style.minHeight = `${minHeight}px`;
-  input.style.maxHeight = `${maxHeight}px`;
-  input.style.overflowY = (lineCount * lineHeight) + verticalPadding > maxHeight ? "auto" : "hidden";
+  input.style.maxHeight = "none";
+  input.style.overflowY = "hidden";
 
   if (isMobile) {
     input.style.width = "calc(100vw - 16px)";

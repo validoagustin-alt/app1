@@ -1244,7 +1244,7 @@ textarea {
     max-width: calc(100vw - 16px) !important;
     height: auto;
     min-height: 220px;
-    max-height: 72vh;
+    max-height: none;
     margin: 38px 0 0 calc(50% - 50vw + 8px) !important;
     padding: 14px 8px !important;
     font-size: 16px !important;
