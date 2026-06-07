@@ -116,7 +116,7 @@ body.theme-dark .hero-card,
 html.theme-dark .topbar,
 body.theme-dark .topbar {
   border-color: #2b3753;
-  background-color: rgba(11, 16, 26, 0.72);
+  background-color: rgba(11, 16, 26, 0.46);
 }
 
 html.theme-dark textarea,
@@ -903,7 +903,7 @@ body.theme-dark::after {
   margin-bottom: 18px;
   padding: 6px;
   border-radius: 16px;
-  background: rgba(7, 13, 18, 0.62);
+  background: rgba(7, 13, 18, 0.34);
   box-shadow: 0 14px 45px rgba(0, 0, 0, 0.42);
 }
 
@@ -946,7 +946,7 @@ h1 {
   border-color: #223847;
   background:
     radial-gradient(circle at 92% 0%, rgba(51, 230, 160, 0.08), transparent 32%),
-    rgba(13, 21, 27, 0.68);
+    rgba(13, 21, 27, 0.36);
 }
 
 .hero-card {
@@ -970,7 +970,7 @@ h1 {
 
 .example-controls {
   border-radius: 10px;
-  background: #0b1218;
+  background: rgba(11, 18, 24, 0.38);
 }
 
 textarea {
@@ -990,7 +990,7 @@ textarea {
 .flow-step,
 .summary-card {
   border-radius: 10px;
-  background: #111820;
+  background: rgba(17, 24, 32, 0.38);
 }
 
 .line-code {

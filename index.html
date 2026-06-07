@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-40">
+  <link rel="stylesheet" href="styles.css?v=app-version-42">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v40</div>
+      <div class="app-version" aria-label="Version de la app">v42</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-40"></script>
+  <script src="app.js?v=app-version-42"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -258,6 +258,62 @@
         showFallbackScreen("explanation");
         window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
+      }
+
+      function handleFallbackBackNavigation() {
+        var currentScreen = document.body.getAttribute("data-screen") || "menu";
+        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        var resultsPanel = byId("results-panel");
+        if (currentScreen === "menu") {
+          return;
+        }
+        if (currentScreen === "disp-palette") {
+          showFallbackScreen("explanation");
+          scrollFallbackPanel(resultsPanel);
+          return;
+        }
+        showFallbackScreen("menu");
+        scrollFallbackPanel(inputPanel);
+      }
+
+      function setupFallbackBackSwipeGesture() {
+        var startX = 0;
+        var startY = 0;
+        var tracking = false;
+
+        on(document, "touchstart", function (event) {
+          var currentScreen = document.body.getAttribute("data-screen") || "menu";
+          var touch;
+          if (!event.touches || event.touches.length !== 1 || currentScreen === "menu") {
+            tracking = false;
+            return;
+          }
+          touch = event.touches[0];
+          startX = touch.clientX;
+          startY = touch.clientY;
+          tracking = startX <= 96;
+        });
+
+        on(document, "touchend", function (event) {
+          var touch;
+          var deltaX;
+          var deltaY;
+          if (!tracking || !event.changedTouches || event.changedTouches.length !== 1) {
+            tracking = false;
+            return;
+          }
+          touch = event.changedTouches[0];
+          deltaX = touch.clientX - startX;
+          deltaY = Math.abs(touch.clientY - startY);
+          tracking = false;
+          if (deltaX >= 110 && deltaY <= 90) {
+            handleFallbackBackNavigation();
+          }
+        });
+
+        on(document, "touchcancel", function () {
+          tracking = false;
+        });
       }
 
       function setTheme(theme) {
@@ -428,8 +484,7 @@
         var i;
         for (i = 0; i < backButtons.length; i += 1) {
           on(backButtons[i], "click", function () {
-            showFallbackScreen("menu");
-            scrollFallbackPanel(document.querySelector(".input-panel"));
+            handleFallbackBackNavigation();
           });
         }
       }
@@ -437,6 +492,7 @@
       applyStableEditorFrame();
       on(byId("jcl-input"), "input", applyStableEditorFrame);
       on(window, "resize", applyStableEditorFrame);
+      setupFallbackBackSwipeGesture();
       showFallbackScreen("menu");
     }());
   </script>

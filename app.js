@@ -18,6 +18,9 @@ const lineCount = document.querySelector("#line-count");
 const actionCategoryButtons = document.querySelectorAll(".category-actions [data-category]");
 let previousScreen = "explanation";
 let selectedCategory = "";
+let backSwipeStartX = 0;
+let backSwipeStartY = 0;
+let backSwipeTracking = false;
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -586,7 +589,7 @@ function analyzeInlineDataLine(rawLine, currentDd, currentProgram = "") {
         ? `Contenido explicito de SYSIN para IDCAMS. ${explainIdcamsControl(compact)}`
         : explainIdcamsControl(compact),
       details: [compact],
-      warnings: /\bDELETE\b|\bPURGE\b/i.test(compact) ? ["Esta sentencia puede borrar o alterar catalogos/datasets. Revisa el nombre antes de ejecutarla."] : [],
+      warnings: /\bDELETE\b|\bPURGE\b/i.test(compact) ? ["Esta sentencia puede borrar una entrada catalogada. Revisa el nombre antes de ejecutarla."] : [],
       helpItems: []
     };
   }
@@ -711,7 +714,7 @@ function explainGenericSysinContent(text, currentProgram) {
 
 function explainIdcamsControl(text) {
   if (/^DELETE\b/i.test(text)) {
-    return "Comando IDCAMS para borrar una entrada catalogada, dataset o cluster VSAM. PURGE fuerza el borrado aunque haya retencion.";
+    return "Comando IDCAMS para borrar una entrada catalogada, por ejemplo un dataset o un cluster VSAM. PURGE fuerza el borrado aunque haya retencion.";
   }
 
   if (/^DEFINE\s+CLUSTER\b/i.test(text)) {
@@ -1794,6 +1797,61 @@ function showPreviousScreen() {
   scrollToPanel(panels[targetScreen] || resultsPanel);
 }
 
+function handleBackNavigation() {
+  const currentScreen = document.body.dataset.screen || "menu";
+
+  if (currentScreen === "menu") {
+    return;
+  }
+
+  if (currentScreen === "disp-palette") {
+    showPreviousScreen();
+    return;
+  }
+
+  showMenu();
+}
+
+function setupBackSwipeGesture() {
+  document.addEventListener("touchstart", (event) => {
+    if (!event.touches || event.touches.length !== 1) {
+      backSwipeTracking = false;
+      return;
+    }
+
+    const currentScreen = document.body.dataset.screen || "menu";
+    if (currentScreen === "menu") {
+      backSwipeTracking = false;
+      return;
+    }
+
+    const touch = event.touches[0];
+    backSwipeStartX = touch.clientX;
+    backSwipeStartY = touch.clientY;
+    backSwipeTracking = backSwipeStartX <= 96;
+  }, { passive: true });
+
+  document.addEventListener("touchend", (event) => {
+    if (!backSwipeTracking || !event.changedTouches || event.changedTouches.length !== 1) {
+      backSwipeTracking = false;
+      return;
+    }
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - backSwipeStartX;
+    const deltaY = Math.abs(touch.clientY - backSwipeStartY);
+    backSwipeTracking = false;
+
+    if (deltaX >= 110 && deltaY <= 90) {
+      handleBackNavigation();
+    }
+  }, { passive: true });
+
+  document.addEventListener("touchcancel", () => {
+    backSwipeTracking = false;
+  }, { passive: true });
+}
+
 function setSelectedCategory(category) {
   selectedCategory = category;
   actionCategoryButtons.forEach((button) => {
@@ -1889,7 +1947,7 @@ if (themeButton) {
 
 backButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    showMenu();
+    handleBackNavigation();
   });
 });
 
@@ -1946,5 +2004,6 @@ input.addEventListener("keydown", (event) => {
 
 input.addEventListener("input", applyEditorFrame);
 window.addEventListener("resize", applyEditorFrame);
+setupBackSwipeGesture();
 
 window.__JCL_APP_READY = true;
