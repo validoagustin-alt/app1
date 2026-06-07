@@ -1767,7 +1767,7 @@ function showMenu() {
     inputPanel.scrollIntoView();
   }
 
-  applyStableEditorFrame();
+  applyEditorFrame();
 }
 
 function showSummaryScreen() {
@@ -1840,6 +1840,7 @@ function loadSelectedExample() {
   input.value = selected.jcl;
   input.scrollTop = 0;
   updateLineCount(input.value.replace(/\r\n/g, "\n").split("\n").length);
+  applyEditorFrame();
   results.className = "results empty-state";
   results.textContent = "Ejemplo cargado. Pulsa Analizar linea por linea para revisarlo completo.";
   summary.className = "summary empty-state";
@@ -1850,7 +1851,7 @@ function loadSelectedExample() {
 populateExamples();
 setTheme("dark");
 applyDispButtonStyle();
-applyStableEditorFrame();
+applyEditorFrame();
 setVisibleScreen("menu");
 
 summaryButton.addEventListener("click", () => {
@@ -1864,6 +1865,7 @@ analyzeButton.addEventListener("click", () => {
 clearButton.addEventListener("click", () => {
   input.value = "";
   resetOutputState();
+  applyEditorFrame();
   showMenu();
   input.focus();
 });
@@ -1900,22 +1902,37 @@ dispSwatches.forEach((button) => {
   });
 });
 
-function applyStableEditorFrame() {
-  if (window.innerWidth > 920) {
-    return;
+function applyEditorFrame() {
+  const lineCount = Math.max(1, input.value.replace(/\r\n/g, "\n").split("\n").length);
+  const isMobile = window.innerWidth <= 920;
+  const lineHeight = isMobile ? 24 : 25;
+  const verticalPadding = isMobile ? 28 : 40;
+  const minHeight = isMobile ? 220 : 260;
+  const maxHeight = Math.max(minHeight, Math.floor(window.innerHeight * (isMobile ? 0.72 : 0.78)));
+  const desiredHeight = Math.min(maxHeight, Math.max(minHeight, (lineCount * lineHeight) + verticalPadding));
+
+  input.style.height = `${desiredHeight}px`;
+  input.style.minHeight = `${minHeight}px`;
+  input.style.maxHeight = `${maxHeight}px`;
+  input.style.overflowY = (lineCount * lineHeight) + verticalPadding > maxHeight ? "auto" : "hidden";
+
+  if (isMobile) {
+    input.style.width = "calc(100vw - 16px)";
+    input.style.maxWidth = "calc(100vw - 16px)";
+    input.style.margin = "38px 0 0 calc(50% - 50vw + 8px)";
+    input.style.resize = "none";
+    input.style.fontSize = "16px";
+    input.style.lineHeight = "1.5";
+    input.style.webkitTextSizeAdjust = "100%";
+  } else {
+    input.style.width = "";
+    input.style.maxWidth = "";
+    input.style.margin = "";
+    input.style.resize = "vertical";
+    input.style.fontSize = "";
+    input.style.lineHeight = "";
   }
 
-  input.style.width = "calc(100vw - 16px)";
-  input.style.maxWidth = "calc(100vw - 16px)";
-  input.style.height = "560px";
-  input.style.minHeight = "560px";
-  input.style.maxHeight = "none";
-  input.style.margin = "38px 0 0 calc(50% - 50vw + 8px)";
-  input.style.resize = "none";
-  input.style.overflow = "auto";
-  input.style.fontSize = "16px";
-  input.style.lineHeight = "1.5";
-  input.style.webkitTextSizeAdjust = "100%";
   input.style.backgroundColor = "#000";
   input.style.color = "#33ff99";
   input.style.caretColor = "#33ff99";
@@ -1927,5 +1944,8 @@ input.addEventListener("keydown", (event) => {
     showExplanationScreen();
   }
 });
+
+input.addEventListener("input", applyEditorFrame);
+window.addEventListener("resize", applyEditorFrame);
 
 window.__JCL_APP_READY = true;
