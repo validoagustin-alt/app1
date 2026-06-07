@@ -1180,6 +1180,7 @@ function renderLineCard(item) {
   const card = document.createElement("article");
   card.className = "line-card";
   card.dataset.type = item.type.toLowerCase().replace(/\//g, "-").replace(/\s+/g, "-");
+  const visibleDetails = item.details.filter((detail) => !isDuplicateAnalyzedLineDetail(detail, item.rawLine));
 
   const number = document.createElement("div");
   number.className = "line-number";
@@ -1196,10 +1197,10 @@ function renderLineCard(item) {
 
   body.append(code, explanation);
 
-  if (item.details.length) {
+  if (visibleDetails.length) {
     const details = document.createElement("div");
     details.className = "details";
-    item.details.forEach((detail) => {
+    visibleDetails.forEach((detail) => {
       const chip = document.createElement("span");
       chip.className = "detail-chip";
       chip.textContent = detail;
@@ -1226,6 +1227,17 @@ function renderLineCard(item) {
 
   card.append(number, body);
   return card;
+}
+
+function isDuplicateAnalyzedLineDetail(detail, rawLine) {
+  return normalizeLineForComparison(detail) === normalizeLineForComparison(rawLine);
+}
+
+function normalizeLineForComparison(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
 }
 
 function renderHelpItem(helpItem) {
