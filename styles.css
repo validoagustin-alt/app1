@@ -1402,3 +1402,62 @@ textarea {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Menu polish requested after publishing v19. */
+.topbar {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.hero {
+  grid-template-columns: minmax(150px, 230px) !important;
+  justify-content: end;
+}
+
+.hero-card {
+  width: min(230px, 100%);
+  min-height: 118px;
+  padding: 16px !important;
+  justify-self: end;
+}
+
+.metric {
+  font-size: 2.15rem !important;
+}
+
+.hero-tags,
+.theme-toggle {
+  display: none !important;
+}
+
+body[data-screen="summary"] .topbar,
+body[data-screen="summary"] .hero,
+body[data-screen="explanation"] .topbar,
+body[data-screen="explanation"] .hero {
+  display: none !important;
+}
+
+body[data-screen="summary"] .app-shell,
+body[data-screen="explanation"] .app-shell {
+  padding-top: 0;
+}
+
+body[data-screen="summary"] .workspace {
+  margin-top: 0;
+}
+
+@media (max-width: 920px) {
+  .hero {
+    width: calc(100% - 16px) !important;
+    grid-template-columns: minmax(140px, 210px) !important;
+  }
+
+  .hero-card {
+    width: min(210px, 100%);
+    padding: 14px !important;
+  }
+
+  body[data-screen="summary"] .app-shell,
+  body[data-screen="explanation"] .app-shell {
+    padding-top: 0;
+  }
+}

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=fixed-color-14">
+  <link rel="stylesheet" href="styles.css?v=menu-polish-19">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,18 +13,9 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true">Tema claro</button>
     </nav>
 
     <section class="hero">
-      <div>
-        <div class="hero-tags" aria-label="Capacidades principales">
-          <span>DISP / DCB / SPACE</span>
-          <span>SORT FIELDS</span>
-          <span>IDCAMS</span>
-          <span>TWS / Endevor</span>
-        </div>
-      </div>
       <div class="hero-card">
         <span class="metric-kicker">Análisis actual</span>
         <span class="metric" id="line-count">0</span>
@@ -47,7 +38,7 @@
         <textarea id="jcl-input" spellcheck="false" style="background:#000;color:#33ff99;caret-color:#33ff99;border-color:#1f5c42;" placeholder="//MIJOB JOB (ACCT),'EJEMPLO',CLASS=A,MSGCLASS=X&#10;//STEP01 EXEC PGM=IEFBR14&#10;//OUTDD DD SYSOUT=*"></textarea>
         <div class="actions">
           <button id="summary-button" type="button">Resumen simplificado</button>
-          <button id="analyze-button" type="button">Analizar JCL</button>
+          <button id="analyze-button" type="button">Analizar linea por linea</button>
           <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
         </div>
       </div>
@@ -56,7 +47,7 @@
         <button class="back-button" type="button" data-back-menu>Ir al menu anterior</button>
         <h2>Resumen simplificado</h2>
         <div id="summary" class="summary empty-state">
-          Todavía no hay análisis. Pega un JCL y pulsa Analizar JCL.
+          Todavía no hay análisis. Pega un JCL y pulsa Analizar linea por linea.
         </div>
       </div>
     </section>
@@ -75,7 +66,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=fixed-color-14"></script>
+  <script src="app.js?v=menu-polish-19"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -187,7 +178,7 @@
         }
         if (byId("results")) {
           byId("results").className = "results empty-state";
-          byId("results").innerHTML = "Ejemplo cargado. Pulsa Analizar JCL para revisarlo linea por linea.";
+          byId("results").innerHTML = "Ejemplo cargado. Pulsa Analizar linea por linea para revisarlo completo.";
         }
         if (byId("summary")) {
           byId("summary").className = "summary empty-state";
@@ -209,6 +200,7 @@
         if (resultsPanel) {
           resultsPanel.hidden = screenName !== "explanation";
         }
+        document.body.setAttribute("data-screen", screenName);
       }
 
       function scrollFallbackPanel(panel) {
@@ -226,6 +218,7 @@
         var panel = byId("summary-panel");
         analyze(false);
         showFallbackScreen("summary");
+        window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
       }
 
@@ -233,6 +226,7 @@
         var panel = byId("results-panel");
         analyze(false);
         showFallbackScreen("explanation");
+        window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
       }
 

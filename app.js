@@ -1160,7 +1160,7 @@ function renderHelpItem(helpItem) {
 function renderSummary(analysis) {
   if (!analysis.length) {
     summary.className = "summary empty-state";
-    summary.textContent = "Todavía no hay análisis. Pega un JCL y pulsa Analizar JCL.";
+    summary.textContent = "Todavía no hay análisis. Pega un JCL y pulsa Analizar linea por linea.";
     return;
   }
 
@@ -1421,8 +1421,10 @@ function escapeHtml(value) {
 function setTheme(theme) {
   const isDark = theme === "dark";
   applyThemeState(isDark);
-  themeButton.textContent = isDark ? "Tema claro" : "Tema oscuro";
-  themeButton.setAttribute("aria-pressed", String(isDark));
+  if (themeButton) {
+    themeButton.textContent = isDark ? "Tema claro" : "Tema oscuro";
+    themeButton.setAttribute("aria-pressed", String(isDark));
+  }
   saveTheme(isDark ? "dark" : "light");
 }
 
@@ -1564,6 +1566,7 @@ function setVisibleScreen(screenName) {
   inputPanel.hidden = screenName !== "menu";
   summaryPanel.hidden = screenName !== "summary";
   resultsPanel.hidden = screenName !== "explanation";
+  document.body.dataset.screen = screenName;
 }
 
 function showMenu() {
@@ -1582,6 +1585,7 @@ function showSummaryScreen() {
   lineCount.textContent = analysis.length;
   renderSummary(analysis);
   setVisibleScreen("summary");
+  window.scrollTo({ top: 0, behavior: "smooth" });
   scrollToPanel(summaryPanel);
 }
 
@@ -1589,6 +1593,7 @@ function showExplanationScreen() {
   const analysis = analyzeJcl(input.value);
   renderAnalysis(analysis);
   setVisibleScreen("explanation");
+  window.scrollTo({ top: 0, behavior: "smooth" });
   scrollToPanel(resultsPanel);
 }
 
@@ -1597,7 +1602,7 @@ function resetOutputState() {
   results.className = "results empty-state";
   results.textContent = "El analisis aparecera aqui.";
   summary.className = "summary empty-state";
-  summary.textContent = "Todavia no hay analisis. Pega un JCL y elige Resumen simplificado o Analizar JCL.";
+  summary.textContent = "Todavia no hay analisis. Pega un JCL y elige Resumen simplificado o Analizar linea por linea.";
 }
 
 function populateExamples() {
@@ -1628,7 +1633,7 @@ function loadSelectedExample() {
   input.scrollTop = 0;
   lineCount.textContent = input.value.replace(/\r\n/g, "\n").split("\n").length;
   results.className = "results empty-state";
-  results.textContent = "Ejemplo cargado. Pulsa Analizar JCL para revisarlo linea por linea.";
+  results.textContent = "Ejemplo cargado. Pulsa Analizar linea por linea para revisarlo completo.";
   summary.className = "summary empty-state";
   summary.textContent = "Ejemplo cargado en el editor. Pulsa Resumen simplificado para ver una lectura rapida.";
   showMenu();
@@ -1664,9 +1669,11 @@ if (sampleButton) {
   });
 }
 
-themeButton.addEventListener("click", () => {
-  setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark");
-});
+if (themeButton) {
+  themeButton.addEventListener("click", () => {
+    setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+}
 
 backButtons.forEach((button) => {
   button.addEventListener("click", () => {
