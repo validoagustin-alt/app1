@@ -194,6 +194,7 @@ function analyzeJcl(text) {
   const analyses = [];
   let currentStep = null;
   let currentDd = null;
+  let currentProgram = "";
   let inInlineData = false;
   let previousJclStatement = null;
 
@@ -208,7 +209,7 @@ function analyzeJcl(text) {
     }
 
     if (inInlineData && compact !== "/*") {
-      const inlineAnalysis = analyzeInlineDataLine(rawLine, currentDd);
+      const inlineAnalysis = analyzeInlineDataLine(rawLine, currentDd, currentProgram);
       analyses.push(makeResult(
         lineNumber,
         rawLine,
@@ -283,12 +284,16 @@ function analyzeJcl(text) {
     if (operation === "JOB") {
       currentStep = null;
       currentDd = null;
+      currentProgram = "";
       explanation = explainJob(parsed, params);
     }
 
     if (operation === "EXEC") {
+      const pgm = findParam(params, "PGM");
+      const proc = findParam(params, "PROC") || ((params[0] && params[0].positional) ? params[0] : null);
       currentStep = parsed.name || currentStep;
       currentDd = null;
+      currentProgram = pgm ? pgm.value : proc ? proc.value : "";
       explanation = explainExec(parsed, params);
     }
 
@@ -470,7 +475,11 @@ function explainDd(parsed, params, currentStep) {
   const parts = [`Define el DD ${parsed.name || "sin nombre"}${currentStep ? ` para el paso ${currentStep}` : ""}.`];
 
   if (isInlineDataDd(parsed.parameters)) {
-    parts.push("Los datos de entrada vienen en las líneas siguientes hasta encontrar /*.");
+    if (/^SYSIN$/i.test(parsed.name || "")) {
+      parts.push("El contenido explicito de SYSIN viene en las lineas siguientes hasta /*; esas lineas son instrucciones de control para el programa del paso, no sentencias JCL.");
+    } else {
+      parts.push("Los datos de entrada vienen en las líneas siguientes hasta encontrar /*.");
+    }
   } else if (sysout) {
     parts.push(`Envía la salida a SYSOUT=${sysout.value}, normalmente spool JES.`);
   } else if (dsn) {
@@ -548,16 +557,19 @@ function buildHelpItems(params) {
   return helpItems;
 }
 
-function analyzeInlineDataLine(rawLine, currentDd) {
+function analyzeInlineDataLine(rawLine, currentDd, currentProgram = "") {
   const compact = rawLine.trim();
   const sortHelpItems = buildSortHelpItems(compact);
+  const isSysin = /^SYSIN$/i.test(currentDd || "");
 
   if (sortHelpItems.length) {
     const sortParams = extractSortControlParameters(compact);
     return {
       type: "SORT",
       title: "Control SORT",
-      explanation: `Esta linea es una sentencia de control para el programa SORT dentro del DD ${currentDd || "inline"}. Define como se ordenan los registros de entrada.`,
+      explanation: isSysin
+        ? "Contenido explicito de SYSIN para SORT. Esta sentencia define las claves por las que se ordenan los registros leidos por SORTIN."
+        : `Esta linea es una sentencia de control para el programa SORT dentro del DD ${currentDd || "inline"}. Define como se ordenan los registros de entrada.`,
       details: sortParams.map(formatParameter),
       warnings: [],
       helpItems: sortHelpItems
@@ -568,9 +580,33 @@ function analyzeInlineDataLine(rawLine, currentDd) {
     return {
       type: "IDCAMS",
       title: "Control IDCAMS",
-      explanation: explainIdcamsControl(compact),
+      explanation: isSysin
+        ? `Contenido explicito de SYSIN para IDCAMS. ${explainIdcamsControl(compact)}`
+        : explainIdcamsControl(compact),
       details: [compact],
       warnings: /\bDELETE\b|\bPURGE\b/i.test(compact) ? ["Esta sentencia puede borrar o alterar catalogos/datasets. Revisa el nombre antes de ejecutarla."] : [],
+      helpItems: []
+    };
+  }
+
+  if (isSysin && /^(COPY|SELECT|EXCLUDE|INDD=|OUTDD=)\b/i.test(compact)) {
+    return {
+      type: "SYSIN",
+      title: "Control IEBCOPY",
+      explanation: explainIebcopySysin(compact),
+      details: [compact],
+      warnings: [],
+      helpItems: []
+    };
+  }
+
+  if (isSysin && /\b(NAME|INDEXED|KEYS|RECORDSIZE|TRACKS|CYLINDERS|DATA|INDEX|FREESPACE|CISZ)\b/i.test(compact)) {
+    return {
+      type: "SYSIN",
+      title: "Detalle IDCAMS/VSAM",
+      explanation: explainVsamSysinDetail(compact),
+      details: [compact],
+      warnings: [],
       helpItems: []
     };
   }
@@ -579,8 +615,21 @@ function analyzeInlineDataLine(rawLine, currentDd) {
     return {
       type: "Endevor SCL",
       title: "Sentencia SCL",
-      explanation: explainEndevorScl(compact),
+      explanation: isSysin
+        ? `Contenido explicito de SYSIN para Endevor batch. ${explainEndevorScl(compact)}`
+        : explainEndevorScl(compact),
       details: [compact],
+      warnings: [],
+      helpItems: []
+    };
+  }
+
+  if (isSysin) {
+    return {
+      type: "SYSIN",
+      title: "Contenido SYSIN",
+      explanation: explainGenericSysinContent(compact, currentProgram),
+      details: compact ? [compact] : [],
       warnings: [],
       helpItems: []
     };
@@ -594,6 +643,68 @@ function analyzeInlineDataLine(rawLine, currentDd) {
     warnings: [],
     helpItems: []
   };
+}
+
+function explainIebcopySysin(text) {
+  if (/^COPY\b/i.test(text)) {
+    return "Contenido explicito de SYSIN para IEBCOPY. COPY indica que se copiara contenido desde el DD de entrada indicado por INDD hacia el DD de salida indicado por OUTDD.";
+  }
+
+  if (/^SELECT\s+MEMBER=/i.test(text)) {
+    return "Contenido explicito de SYSIN para IEBCOPY. SELECT MEMBER limita la copia al miembro indicado, en vez de copiar toda la libreria.";
+  }
+
+  if (/^EXCLUDE\s+MEMBER=/i.test(text)) {
+    return "Contenido explicito de SYSIN para IEBCOPY. EXCLUDE MEMBER evita copiar el miembro indicado.";
+  }
+
+  return "Contenido explicito de SYSIN para IEBCOPY. Esta linea ajusta que miembros o librerias se copian.";
+}
+
+function explainVsamSysinDetail(text) {
+  if (/\bINDEXED\b/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. INDEXED indica que el cluster VSAM sera KSDS, es decir, organizado por clave.";
+  }
+
+  if (/\bKEYS\s*\(/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. KEYS define longitud y posicion inicial de la clave del registro VSAM.";
+  }
+
+  if (/\bRECORDSIZE\s*\(/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. RECORDSIZE define el tamano promedio y maximo de los registros.";
+  }
+
+  if (/\b(TRACKS|CYLINDERS)\s*\(/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. Esta linea reserva espacio primario y secundario para el cluster VSAM.";
+  }
+
+  if (/^\s*DATA\b/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. DATA nombra o configura el componente de datos del cluster VSAM.";
+  }
+
+  if (/^\s*INDEX\b/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. INDEX nombra o configura el componente indice del cluster VSAM.";
+  }
+
+  if (/\bFREESPACE\s*\(/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. FREESPACE deja espacio libre en control intervals/areas para futuras inserciones.";
+  }
+
+  if (/\bCISZ\s*\(/i.test(text)) {
+    return "Contenido explicito de SYSIN para IDCAMS. CISZ define el tamano del control interval del VSAM.";
+  }
+
+  return "Contenido explicito de SYSIN para IDCAMS. Esta linea continua o completa la definicion del objeto VSAM.";
+}
+
+function explainGenericSysinContent(text, currentProgram) {
+  const program = currentProgram ? ` para ${currentProgram}` : "";
+
+  if (!text) {
+    return `Linea vacia dentro de SYSIN${program}. No agrega una instruccion, solo separa visualmente el bloque.`;
+  }
+
+  return `Contenido explicito de SYSIN${program}. Esta linea no es JCL: se entrega como instruccion de control al programa que se esta ejecutando en el paso.`;
 }
 
 function explainIdcamsControl(text) {
@@ -1081,7 +1192,7 @@ function renderLineCard(item) {
 
   const title = document.createElement("div");
   title.className = "line-title";
-  title.innerHTML = `<span class="badge">${escapeHtml(item.type)}</span><strong>${escapeHtml(item.title)}</strong>`;
+  title.innerHTML = `<strong>${escapeHtml(item.title)}</strong>`;
 
   const explanation = document.createElement("p");
   explanation.className = "line-explanation";
