@@ -382,53 +382,6 @@ textarea:focus {
   margin-top: 16px;
 }
 
-.summary-color-lab {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(var(--panel-rgb), 0.52);
-}
-
-.summary-color-lab > span {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 750;
-}
-
-.summary-color-grid {
-  display: grid;
-  grid-template-columns: repeat(10, minmax(34px, 1fr));
-  gap: 8px;
-}
-
-.summary-color-swatch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  min-height: 38px;
-  padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  background: var(--swatch-bg);
-  color: var(--swatch-ink);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  font-size: 0.74rem;
-  line-height: 1;
-}
-
-.summary-color-swatch:hover {
-  filter: saturate(1.08);
-}
-
-.summary-color-swatch.is-selected {
-  outline: 2px solid var(--accent-dark);
-  outline-offset: 2px;
-}
-
 button {
   border: 0;
   border-radius: 999px;
@@ -1040,10 +993,6 @@ textarea {
     grid-template-columns: 1fr 1fr;
   }
 
-  .summary-color-grid {
-    grid-template-columns: repeat(5, minmax(34px, 1fr));
-  }
-
   #analyze-button,
   .secondary-button {
     width: 100%;
@@ -1405,26 +1354,24 @@ textarea {
 }
 
 #summary-button,
-#analyze-button {
+#analyze-button,
+#clear-button {
   min-height: 48px;
   padding: 14px 18px;
 }
 
-#summary-button {
-  color: #00130d;
-  background: linear-gradient(135deg, #33e6a0, #2bd88f);
-  box-shadow: 0 14px 40px rgba(51, 230, 160, 0.22);
-}
-
-#analyze-button {
-  border: 1px solid #244552;
-  color: #dffcf2;
-  background: linear-gradient(135deg, #102f29, #102233);
-  box-shadow: none;
+#summary-button,
+#analyze-button,
+#clear-button {
+  border: 1px solid #0e7490;
+  color: #ecfeff;
+  background: linear-gradient(135deg, #06b6d4, #0e7490);
+  box-shadow: 0 14px 40px rgba(6, 182, 212, 0.24);
 }
 
 #analyze-button:hover,
-#summary-button:hover {
+#summary-button:hover,
+#clear-button:hover {
   filter: saturate(1.08);
 }
 

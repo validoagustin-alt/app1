@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=summary-colors-20">
+  <link rel="stylesheet" href="styles.css?v=fixed-color-14">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -50,31 +50,6 @@
           <button id="analyze-button" type="button">Analizar JCL</button>
           <button class="secondary-button" id="clear-button" type="button">Limpiar</button>
         </div>
-        <div class="summary-color-lab" aria-label="20 fondos para el boton Resumen simplificado">
-          <span>Fondos para Resumen simplificado</span>
-          <div class="summary-color-grid">
-            <button class="summary-color-swatch is-selected" type="button" data-summary-button-bg="linear-gradient(135deg, #33e6a0, #2bd88f)" data-summary-button-fg="#00130d" data-summary-button-shadow="rgba(51, 230, 160, 0.22)" style="--swatch-bg: linear-gradient(135deg, #33e6a0, #2bd88f); --swatch-ink: #00130d;" aria-pressed="true">01</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #14b8a6, #0f766e)" data-summary-button-fg="#ecfeff" data-summary-button-shadow="rgba(20, 184, 166, 0.24)" style="--swatch-bg: linear-gradient(135deg, #14b8a6, #0f766e); --swatch-ink: #ecfeff;" aria-pressed="false">02</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #22c55e, #15803d)" data-summary-button-fg="#f0fdf4" data-summary-button-shadow="rgba(34, 197, 94, 0.24)" style="--swatch-bg: linear-gradient(135deg, #22c55e, #15803d); --swatch-ink: #f0fdf4;" aria-pressed="false">03</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #84cc16, #4d7c0f)" data-summary-button-fg="#f7fee7" data-summary-button-shadow="rgba(132, 204, 22, 0.22)" style="--swatch-bg: linear-gradient(135deg, #84cc16, #4d7c0f); --swatch-ink: #f7fee7;" aria-pressed="false">04</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #facc15, #ca8a04)" data-summary-button-fg="#241a00" data-summary-button-shadow="rgba(250, 204, 21, 0.24)" style="--swatch-bg: linear-gradient(135deg, #facc15, #ca8a04); --swatch-ink: #241a00;" aria-pressed="false">05</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #f97316, #c2410c)" data-summary-button-fg="#fff7ed" data-summary-button-shadow="rgba(249, 115, 22, 0.24)" style="--swatch-bg: linear-gradient(135deg, #f97316, #c2410c); --swatch-ink: #fff7ed;" aria-pressed="false">06</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #ef4444, #991b1b)" data-summary-button-fg="#fef2f2" data-summary-button-shadow="rgba(239, 68, 68, 0.24)" style="--swatch-bg: linear-gradient(135deg, #ef4444, #991b1b); --swatch-ink: #fef2f2;" aria-pressed="false">07</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #ec4899, #9d174d)" data-summary-button-fg="#fdf2f8" data-summary-button-shadow="rgba(236, 72, 153, 0.24)" style="--swatch-bg: linear-gradient(135deg, #ec4899, #9d174d); --swatch-ink: #fdf2f8;" aria-pressed="false">08</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #d946ef, #86198f)" data-summary-button-fg="#fdf4ff" data-summary-button-shadow="rgba(217, 70, 239, 0.23)" style="--swatch-bg: linear-gradient(135deg, #d946ef, #86198f); --swatch-ink: #fdf4ff;" aria-pressed="false">09</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #8b5cf6, #5b21b6)" data-summary-button-fg="#f5f3ff" data-summary-button-shadow="rgba(139, 92, 246, 0.24)" style="--swatch-bg: linear-gradient(135deg, #8b5cf6, #5b21b6); --swatch-ink: #f5f3ff;" aria-pressed="false">10</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #6366f1, #3730a3)" data-summary-button-fg="#eef2ff" data-summary-button-shadow="rgba(99, 102, 241, 0.24)" style="--swatch-bg: linear-gradient(135deg, #6366f1, #3730a3); --swatch-ink: #eef2ff;" aria-pressed="false">11</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #3b82f6, #1d4ed8)" data-summary-button-fg="#eff6ff" data-summary-button-shadow="rgba(59, 130, 246, 0.24)" style="--swatch-bg: linear-gradient(135deg, #3b82f6, #1d4ed8); --swatch-ink: #eff6ff;" aria-pressed="false">12</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #0ea5e9, #0369a1)" data-summary-button-fg="#f0f9ff" data-summary-button-shadow="rgba(14, 165, 233, 0.24)" style="--swatch-bg: linear-gradient(135deg, #0ea5e9, #0369a1); --swatch-ink: #f0f9ff;" aria-pressed="false">13</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #06b6d4, #0e7490)" data-summary-button-fg="#ecfeff" data-summary-button-shadow="rgba(6, 182, 212, 0.24)" style="--swatch-bg: linear-gradient(135deg, #06b6d4, #0e7490); --swatch-ink: #ecfeff;" aria-pressed="false">14</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #64748b, #334155)" data-summary-button-fg="#f8fafc" data-summary-button-shadow="rgba(100, 116, 139, 0.24)" style="--swatch-bg: linear-gradient(135deg, #64748b, #334155); --swatch-ink: #f8fafc;" aria-pressed="false">15</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #111827, #030712)" data-summary-button-fg="#f9fafb" data-summary-button-shadow="rgba(17, 24, 39, 0.32)" style="--swatch-bg: linear-gradient(135deg, #111827, #030712); --swatch-ink: #f9fafb;" aria-pressed="false">16</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #fafafa, #d4d4d4)" data-summary-button-fg="#171717" data-summary-button-shadow="rgba(212, 212, 212, 0.28)" style="--swatch-bg: linear-gradient(135deg, #fafafa, #d4d4d4); --swatch-ink: #171717;" aria-pressed="false">17</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #fde68a, #f59e0b)" data-summary-button-fg="#2a1700" data-summary-button-shadow="rgba(245, 158, 11, 0.24)" style="--swatch-bg: linear-gradient(135deg, #fde68a, #f59e0b); --swatch-ink: #2a1700;" aria-pressed="false">18</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #fda4af, #e11d48)" data-summary-button-fg="#fff1f2" data-summary-button-shadow="rgba(225, 29, 72, 0.24)" style="--swatch-bg: linear-gradient(135deg, #fda4af, #e11d48); --swatch-ink: #fff1f2;" aria-pressed="false">19</button>
-            <button class="summary-color-swatch" type="button" data-summary-button-bg="linear-gradient(135deg, #a7f3d0, #10b981)" data-summary-button-fg="#052e1b" data-summary-button-shadow="rgba(16, 185, 129, 0.24)" style="--swatch-bg: linear-gradient(135deg, #a7f3d0, #10b981); --swatch-ink: #052e1b;" aria-pressed="false">20</button>
-          </div>
-        </div>
       </div>
 
       <div class="panel summary-panel screen-panel" id="summary-panel" tabindex="-1" hidden>
@@ -100,7 +75,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=summary-colors-20"></script>
+  <script src="app.js?v=fixed-color-14"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -399,47 +374,6 @@
         input.style.borderColor = "#1f5c42";
       }
 
-      function applySummaryButtonColor(option, options) {
-        var summaryButton = byId("summary-button");
-        var i;
-        var active;
-        if (!summaryButton || !option) {
-          return;
-        }
-        summaryButton.style.background = option.getAttribute("data-summary-button-bg");
-        summaryButton.style.color = option.getAttribute("data-summary-button-fg") || "#ffffff";
-        summaryButton.style.boxShadow = "0 14px 40px " + (option.getAttribute("data-summary-button-shadow") || "rgba(51, 230, 160, 0.22)");
-        for (i = 0; i < options.length; i += 1) {
-          active = options[i] === option;
-          if (options[i].classList) {
-            if (active) {
-              options[i].classList.add("is-selected");
-            } else {
-              options[i].classList.remove("is-selected");
-            }
-          }
-          options[i].setAttribute("aria-pressed", active ? "true" : "false");
-        }
-      }
-
-      function initializeSummaryColorOptions() {
-        if (!document.querySelectorAll) {
-          return;
-        }
-        var options = document.querySelectorAll("[data-summary-button-bg]");
-        var selected = document.querySelector(".summary-color-swatch.is-selected") || options[0];
-        var i;
-        if (!options.length) {
-          return;
-        }
-        applySummaryButtonColor(selected, options);
-        for (i = 0; i < options.length; i += 1) {
-          on(options[i], "click", function () {
-            applySummaryButtonColor(this, options);
-          });
-        }
-      }
-
       populateExamples();
       on(byId("example-select"), "change", loadExample);
       on(byId("sample-button"), "click", loadExample);
@@ -471,7 +405,6 @@
         }
       }
       setTheme("dark");
-      initializeSummaryColorOptions();
       applyStableEditorFrame();
       showFallbackScreen("menu");
     }());
