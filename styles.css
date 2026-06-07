@@ -1478,6 +1478,16 @@ body[data-screen="summary"] .workspace {
   order: 2;
 }
 
+.syntax-help--disp summary {
+  background: var(--disp-button-bg, #33e6a0) !important;
+  color: var(--disp-button-ink, #06110d) !important;
+  box-shadow: 0 12px 30px rgba(51, 230, 160, 0.22);
+}
+
+.syntax-help--disp summary:hover {
+  filter: saturate(1.12) brightness(1.03);
+}
+
 .disp-mini-button {
   display: inline-flex;
   width: 34px;

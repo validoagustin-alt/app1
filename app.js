@@ -12,9 +12,12 @@ const summaryPanel = document.querySelector("#summary-panel");
 const resultsPanel = document.querySelector("#results-panel");
 const dispPalettePanel = document.querySelector("#disp-palette-panel");
 const dispPaletteBack = document.querySelector("#disp-palette-back");
+const dispSwatches = document.querySelectorAll(".disp-swatch");
 const backButtons = document.querySelectorAll("[data-back-menu]");
 const lineCount = document.querySelector("#line-count");
 let previousScreen = "explanation";
+const defaultDispButtonColor = "#33e6a0";
+const defaultDispButtonInk = "#06110d";
 
 const exampleJcls = [
   {
@@ -1559,6 +1562,46 @@ function saveTheme(theme) {
   }
 }
 
+function getSavedDispButtonStyle() {
+  try {
+    if (!window.localStorage) {
+      return null;
+    }
+
+    const saved = JSON.parse(localStorage.getItem("jcl-explainer-disp-button") || "null");
+    return saved && saved.color && saved.ink ? saved : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveDispButtonStyle(style) {
+  try {
+    if (window.localStorage) {
+      localStorage.setItem("jcl-explainer-disp-button", JSON.stringify(style));
+    }
+  } catch (error) {
+    // iOS Safari can block localStorage for file:// pages; the selected style still works for this session.
+  }
+}
+
+function applyDispButtonStyle(style = getSavedDispButtonStyle()) {
+  const selectedStyle = style || { color: defaultDispButtonColor, ink: defaultDispButtonInk };
+  document.documentElement.style.setProperty("--disp-button-bg", selectedStyle.color);
+  document.documentElement.style.setProperty("--disp-button-ink", selectedStyle.ink);
+  document.documentElement.style.setProperty("--disp-button-glow", selectedStyle.color);
+}
+
+function selectDispButtonStyle(button) {
+  const style = {
+    color: button.dataset.dispColor || defaultDispButtonColor,
+    ink: button.dataset.dispInk || defaultDispButtonInk
+  };
+  applyDispButtonStyle(style);
+  saveDispButtonStyle(style);
+  showPreviousScreen();
+}
+
 function scrollToSummary() {
   try {
     summaryPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1687,6 +1730,7 @@ function loadSelectedExample() {
 
 populateExamples();
 setTheme("dark");
+applyDispButtonStyle();
 applyStableEditorFrame();
 setVisibleScreen("menu");
 
@@ -1730,6 +1774,12 @@ backButtons.forEach((button) => {
 if (dispPaletteBack) {
   dispPaletteBack.addEventListener("click", showPreviousScreen);
 }
+
+dispSwatches.forEach((button) => {
+  button.addEventListener("click", () => {
+    selectDispButtonStyle(button);
+  });
+});
 
 function applyStableEditorFrame() {
   if (window.innerWidth > 920) {
