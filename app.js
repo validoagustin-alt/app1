@@ -25,6 +25,7 @@ let backSwipeDragging = false;
 let backSwipePanel = null;
 let backSwipeStartScreen = "";
 let backSwipeTargetScreen = "";
+let backSwipePointerId = null;
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1987,6 +1988,132 @@ function getPanelForScreen(screenName) {
 }
 
 function setupBackSwipeGesture() {
+  if (window.PointerEvent) {
+    document.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch" || !event.isPrimary) {
+        return;
+      }
+
+      const currentScreen = document.body.dataset.screen || "menu";
+      if (currentScreen === "menu") {
+        backSwipeTracking = false;
+        backSwipeDragging = false;
+        backSwipePanel = null;
+        backSwipePointerId = null;
+        return;
+      }
+
+      backSwipeStartX = event.clientX;
+      backSwipeStartY = event.clientY;
+      backSwipeStartScreen = currentScreen;
+      backSwipeTargetScreen = getBackNavigationTargetScreen(currentScreen);
+      backSwipePanel = null;
+      backSwipeDragging = false;
+      backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
+      backSwipePointerId = backSwipeTracking ? event.pointerId : null;
+
+      if (backSwipeTracking) {
+        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+        if (!backSwipePanel) {
+          backSwipeTracking = false;
+          backSwipePointerId = null;
+          backSwipeStartScreen = "";
+          backSwipeTargetScreen = "";
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener("pointermove", (event) => {
+      if (!backSwipeTracking || backSwipePointerId !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - backSwipeStartX;
+      const deltaY = Math.abs(event.clientY - backSwipeStartY);
+
+      if (deltaX <= 0) {
+        if (backSwipeDragging) {
+          applySwipePanelOffset(backSwipePanel, 0, false);
+        }
+        return;
+      }
+
+      if (!backSwipeDragging) {
+        if (deltaY > 16 && deltaY > deltaX) {
+          backSwipeTracking = false;
+          backSwipePointerId = null;
+          cleanupBackSwipePreview(true);
+          backSwipeStartScreen = "";
+          backSwipeTargetScreen = "";
+          return;
+        }
+
+        if (deltaX < 4 || deltaX * 0.9 < deltaY) {
+          return;
+        }
+        backSwipeDragging = true;
+      }
+
+      event.preventDefault();
+      applySwipePanelOffset(backSwipePanel, Math.min(deltaX, window.innerWidth * 0.94), false);
+    }, { passive: false });
+
+    document.addEventListener("pointerup", (event) => {
+      if (!backSwipeTracking || backSwipePointerId !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - backSwipeStartX;
+      const deltaY = Math.abs(event.clientY - backSwipeStartY);
+      const activePanel = backSwipePanel;
+      const shouldNavigate = backSwipeDragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+      backSwipeTracking = false;
+      backSwipeDragging = false;
+      backSwipePointerId = null;
+
+      if (!activePanel) {
+        cleanupBackSwipePreview(true);
+        return;
+      }
+
+      if (shouldNavigate) {
+        applySwipePanelOffset(activePanel, window.innerWidth, true);
+        window.setTimeout(() => {
+          cleanupBackSwipePreview(false);
+          handleBackNavigation();
+        }, 180);
+        return;
+      }
+
+      applySwipePanelOffset(activePanel, 0, true);
+      window.setTimeout(() => {
+        cleanupBackSwipePreview(true);
+      }, 220);
+    }, { passive: true });
+
+    document.addEventListener("pointercancel", (event) => {
+      if (backSwipePointerId !== null && backSwipePointerId !== event.pointerId) {
+        return;
+      }
+
+      const activePanel = backSwipePanel;
+      if (activePanel) {
+        applySwipePanelOffset(activePanel, 0, true);
+        window.setTimeout(() => {
+          cleanupBackSwipePreview(true);
+        }, 220);
+      } else {
+        cleanupBackSwipePreview(true);
+      }
+
+      backSwipeTracking = false;
+      backSwipeDragging = false;
+      backSwipePointerId = null;
+    }, { passive: true });
+
+    return;
+  }
+
   document.addEventListener("touchstart", (event) => {
     if (!event.touches || event.touches.length !== 1) {
       backSwipeTracking = false;

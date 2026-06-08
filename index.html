@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-48">
+  <link rel="stylesheet" href="styles.css?v=app-version-49">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v48</div>
+      <div class="app-version" aria-label="Version de la app">v49</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-48"></script>
+  <script src="app.js?v=app-version-49"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -432,6 +432,141 @@
         var panel = null;
         var startScreen = "";
         var targetScreen = "";
+        var pointerId = null;
+
+        if (window.PointerEvent) {
+          on(document, "pointerdown", function (event) {
+            var currentScreen = document.body.getAttribute("data-screen") || "menu";
+            if (event.pointerType !== "touch" || !event.isPrimary) {
+              return;
+            }
+            if (currentScreen === "menu") {
+              tracking = false;
+              dragging = false;
+              panel = null;
+              startScreen = "";
+              targetScreen = "";
+              pointerId = null;
+              return;
+            }
+            startX = event.clientX;
+            startY = event.clientY;
+            startScreen = currentScreen;
+            targetScreen = getFallbackBackTargetScreen(currentScreen);
+            panel = null;
+            dragging = false;
+            tracking = !!targetScreen && !!getFallbackActivePanel();
+            pointerId = tracking ? event.pointerId : null;
+            if (tracking) {
+              panel = prepareFallbackBackPreview(startScreen, targetScreen);
+              if (!panel) {
+                tracking = false;
+                startScreen = "";
+                targetScreen = "";
+                pointerId = null;
+              }
+            }
+          });
+
+          on(document, "pointermove", function (event) {
+            var deltaX;
+            var deltaY;
+            if (!tracking || pointerId !== event.pointerId) {
+              return;
+            }
+            deltaX = event.clientX - startX;
+            deltaY = Math.abs(event.clientY - startY);
+            if (deltaX <= 0) {
+              if (dragging) {
+                applyFallbackSwipeOffset(panel, 0, false);
+              }
+              return;
+            }
+            if (!dragging) {
+              if (deltaY > 16 && deltaY > deltaX) {
+                tracking = false;
+                pointerId = null;
+                cleanupFallbackBackPreview(panel, startScreen, true);
+                panel = null;
+                startScreen = "";
+                targetScreen = "";
+                return;
+              }
+              if (deltaX < 4 || deltaX * 0.9 < deltaY) {
+                return;
+              }
+              dragging = true;
+            }
+            if (event.preventDefault) {
+              event.preventDefault();
+            }
+            applyFallbackSwipeOffset(panel, Math.min(deltaX, window.innerWidth * 0.94), false);
+          });
+
+          on(document, "pointerup", function (event) {
+            var deltaX;
+            var deltaY;
+            var activePanel;
+            var shouldNavigate;
+            if (!tracking || pointerId !== event.pointerId) {
+              return;
+            }
+            deltaX = event.clientX - startX;
+            deltaY = Math.abs(event.clientY - startY);
+            activePanel = panel;
+            shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+            tracking = false;
+            dragging = false;
+            pointerId = null;
+            panel = null;
+            if (!activePanel) {
+              cleanupFallbackBackPreview(activePanel, startScreen, true);
+              startScreen = "";
+              targetScreen = "";
+              return;
+            }
+            if (shouldNavigate) {
+              applyFallbackSwipeOffset(activePanel, window.innerWidth, true);
+              window.setTimeout(function () {
+                cleanupFallbackBackPreview(activePanel, startScreen, false);
+                handleFallbackBackNavigation();
+              }, 180);
+              startScreen = "";
+              targetScreen = "";
+              return;
+            }
+            applyFallbackSwipeOffset(activePanel, 0, true);
+            window.setTimeout(function () {
+              cleanupFallbackBackPreview(activePanel, startScreen, true);
+            }, 220);
+            startScreen = "";
+            targetScreen = "";
+          });
+
+          on(document, "pointercancel", function (event) {
+            var activePanel;
+            if (pointerId !== null && pointerId !== event.pointerId) {
+              return;
+            }
+            activePanel = panel;
+            if (activePanel) {
+              applyFallbackSwipeOffset(activePanel, 0, true);
+              window.setTimeout(function () {
+                cleanupFallbackBackPreview(activePanel, startScreen, true);
+              }, 220);
+            } else {
+              cleanupFallbackBackPreview(activePanel, startScreen, true);
+            }
+            tracking = false;
+            dragging = false;
+            panel = null;
+            startScreen = "";
+            targetScreen = "";
+            pointerId = null;
+          });
+
+          return;
+        }
 
         on(document, "touchstart", function (event) {
           var currentScreen = document.body.getAttribute("data-screen") || "menu";
