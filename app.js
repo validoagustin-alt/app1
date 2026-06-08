@@ -2058,13 +2058,11 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   document.body.dataset.backPreview = targetScreen;
 
   const rect = activePanel.getBoundingClientRect();
-  activePanel.dataset.prevVisibility = activePanel.style.visibility || "";
-  activePanel.style.visibility = "hidden";
-  backSwipeSourcePanel = activePanel;
-
   dragClone = activePanel.cloneNode(true);
   dragClone.removeAttribute("id");
   dragClone.setAttribute("aria-hidden", "true");
+  dragClone.style.visibility = "visible";
+  dragClone.style.opacity = "1";
   dragClone.style.position = "fixed";
   dragClone.style.left = `${rect.left}px`;
   dragClone.style.top = `${rect.top}px`;
@@ -2079,6 +2077,10 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   dragClone.style.backdropFilter = "none";
   dragClone.style.webkitBackdropFilter = "none";
   document.body.appendChild(dragClone);
+
+  activePanel.dataset.prevVisibility = activePanel.style.visibility || "";
+  activePanel.style.visibility = "hidden";
+  backSwipeSourcePanel = activePanel;
 
   applySwipePanelOffset(dragClone, 0, false);
   return dragClone;
