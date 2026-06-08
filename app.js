@@ -2010,7 +2010,7 @@ function setupBackSwipeGesture() {
     backSwipeTargetScreen = getBackNavigationTargetScreen(currentScreen);
     backSwipePanel = null;
     backSwipeDragging = false;
-    backSwipeTracking = backSwipeStartX <= 96 && Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
+    backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
 
     if (backSwipeTracking) {
       backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
