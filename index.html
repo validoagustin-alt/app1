@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-58">
+  <link rel="stylesheet" href="styles.css?v=app-version-59">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v58</div>
+      <div class="app-version" aria-label="Version de la app">v59</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-58"></script>
+    <script src="app.js?v=app-version-59"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -253,6 +253,27 @@
         document.body.setAttribute("data-screen", screenName);
       }
 
+      var suppressScreenHistory = false;
+
+      function syncFallbackHistory(screenName, options) {
+        var state;
+        var currentState;
+        options = options || {};
+        if (!window.history || typeof window.history.pushState !== "function" || suppressScreenHistory) {
+          return;
+        }
+        state = { screen: screenName };
+        currentState = window.history.state || {};
+        if (options.replace || !currentState.screen) {
+          window.history.replaceState(state, "", window.location.href);
+          return;
+        }
+        if (currentState.screen === screenName) {
+          return;
+        }
+        window.history.pushState(state, "", window.location.href);
+      }
+
       function scrollFallbackPanel(panel) {
         if (panel && panel.scrollIntoView) {
           panel.scrollIntoView();
@@ -264,27 +285,43 @@
         }
       }
 
-      function showFallbackSummary() {
+      function showFallbackSummary(options) {
         var panel = byId("summary-panel");
+        options = options || {};
         analyze(false);
         showFallbackScreen("summary");
+        syncFallbackHistory("summary", { replace: options.replaceHistory });
         window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
       }
 
-      function showFallbackExplanation() {
+      function showFallbackExplanation(options) {
         var panel = byId("results-panel");
+        options = options || {};
         analyze(false);
         showFallbackScreen("explanation");
+        syncFallbackHistory("explanation", { replace: options.replaceHistory });
         window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
+      }
+
+      function showFallbackMenu(options) {
+        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        options = options || {};
+        showFallbackScreen("menu");
+        syncFallbackHistory("menu", { replace: options.replaceHistory });
+        scrollFallbackPanel(inputPanel);
       }
 
       function handleFallbackBackNavigation() {
         var currentScreen = document.body.getAttribute("data-screen") || "menu";
-        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        var historyState = window.history ? window.history.state : null;
         var resultsPanel = byId("results-panel");
         if (currentScreen === "menu") {
+          return;
+        }
+        if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
+          window.history.back();
           return;
         }
         if (currentScreen === "disp-palette") {
@@ -292,8 +329,7 @@
           scrollFallbackPanel(resultsPanel);
           return;
         }
-        showFallbackScreen("menu");
-        scrollFallbackPanel(inputPanel);
+        showFallbackMenu();
       }
 
       function getFallbackBackTargetScreen(currentScreen) {
@@ -888,6 +924,19 @@
         input.style.height = Math.max(minHeight, input.scrollHeight + 2) + "px";
       }
 
+      function restoreFallbackScreenFromHistory(state) {
+        var targetScreen = state && state.screen ? state.screen : "menu";
+        suppressScreenHistory = true;
+        if (targetScreen === "summary") {
+          showFallbackSummary();
+        } else if (targetScreen === "explanation") {
+          showFallbackExplanation();
+        } else {
+          showFallbackMenu();
+        }
+        suppressScreenHistory = false;
+      }
+
       populateExamples();
       on(byId("example-select"), "change", loadExample);
       on(byId("sample-button"), "click", loadExample);
@@ -907,7 +956,7 @@
         if (byId("line-count")) {
           byId("line-count").innerHTML = "0";
         }
-        showFallbackScreen("menu");
+        showFallbackMenu();
       });
       if (document.querySelectorAll) {
         var backButtons = document.querySelectorAll("[data-back-menu]");
@@ -924,6 +973,10 @@
       on(window, "resize", applyStableEditorFrame);
       setupFallbackBackSwipeGesture();
       showFallbackScreen("menu");
+      syncFallbackHistory("menu", { replace: true });
+      on(window, "popstate", function (event) {
+        restoreFallbackScreenFromHistory(event.state || { screen: "menu" });
+      });
     }());
   </script>
 </body>

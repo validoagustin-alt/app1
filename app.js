@@ -27,6 +27,7 @@ let backSwipeStartScreen = "";
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
 let backSwipeCaptureElement = null;
+let suppressScreenHistory = false;
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1877,8 +1878,40 @@ function setVisibleScreen(screenName) {
   document.body.dataset.screen = screenName;
 }
 
-function showMenu() {
+function getScreenHistoryState(screenName) {
+  return {
+    screen: screenName,
+    previousScreen: screenName === "disp-palette" ? previousScreen || "explanation" : ""
+  };
+}
+
+function syncScreenHistory(screenName, options = {}) {
+  if (!window.history || typeof window.history.pushState !== "function" || suppressScreenHistory) {
+    return;
+  }
+
+  const state = getScreenHistoryState(screenName);
+  const currentState = window.history.state || {};
+  const shouldReplace = Boolean(options.replace) || !currentState.screen;
+
+  if (shouldReplace) {
+    window.history.replaceState(state, "", window.location.href);
+    return;
+  }
+
+  if (
+    currentState.screen === state.screen &&
+    (currentState.previousScreen || "") === (state.previousScreen || "")
+  ) {
+    return;
+  }
+
+  window.history.pushState(state, "", window.location.href);
+}
+
+function showMenu(options = {}) {
   setVisibleScreen("menu");
+  syncScreenHistory("menu", { replace: options.replaceHistory });
   try {
     inputPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
@@ -1888,31 +1921,34 @@ function showMenu() {
   applyEditorFrame();
 }
 
-function showSummaryScreen() {
+function showSummaryScreen(options = {}) {
   const analysis = analyzeJcl(input.value);
   updateLineCount(analysis.length);
   renderSummary(analysis);
   setVisibleScreen("summary");
+  syncScreenHistory("summary", { replace: options.replaceHistory });
   window.scrollTo({ top: 0, behavior: "smooth" });
   scrollToPanel(summaryPanel);
 }
 
-function showExplanationScreen() {
+function showExplanationScreen(options = {}) {
   const analysis = analyzeJcl(input.value);
   renderAnalysis(analysis);
   setVisibleScreen("explanation");
+  syncScreenHistory("explanation", { replace: options.replaceHistory });
   window.scrollTo({ top: 0, behavior: "smooth" });
   scrollToPanel(resultsPanel);
 }
 
-function showDispPaletteScreen() {
-  previousScreen = document.body.dataset.screen || "explanation";
+function showDispPaletteScreen(options = {}) {
+  previousScreen = options.previousScreen || document.body.dataset.screen || "explanation";
   setVisibleScreen("disp-palette");
+  syncScreenHistory("disp-palette", { replace: options.replaceHistory });
   window.scrollTo({ top: 0, behavior: "smooth" });
   scrollToPanel(dispPalettePanel);
 }
 
-function showPreviousScreen() {
+function showPreviousScreen(options = {}) {
   const targetScreen = previousScreen || "explanation";
   const panels = {
     menu: inputPanel,
@@ -1920,22 +1956,47 @@ function showPreviousScreen() {
     explanation: resultsPanel
   };
   setVisibleScreen(targetScreen);
+  syncScreenHistory(targetScreen, { replace: options.replaceHistory });
   scrollToPanel(panels[targetScreen] || resultsPanel);
 }
 
 function handleBackNavigation() {
   const currentScreen = document.body.dataset.screen || "menu";
+  const targetScreen = getBackNavigationTargetScreen(currentScreen);
+  const historyState = window.history ? window.history.state : null;
 
-  if (currentScreen === "menu") {
+  if (!targetScreen || currentScreen === "menu") {
+    return;
+  }
+
+  if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
+    window.history.back();
     return;
   }
 
   if (currentScreen === "disp-palette") {
-    showPreviousScreen();
+    showPreviousScreen({ replaceHistory: true });
     return;
   }
 
-  showMenu();
+  showMenu({ replaceHistory: true });
+}
+
+function restoreScreenFromHistory(state) {
+  const targetScreen = state && state.screen ? state.screen : "menu";
+  suppressScreenHistory = true;
+
+  if (targetScreen === "summary") {
+    showSummaryScreen();
+  } else if (targetScreen === "explanation") {
+    showExplanationScreen();
+  } else if (targetScreen === "disp-palette") {
+    showDispPaletteScreen({ previousScreen: state.previousScreen || "explanation" });
+  } else {
+    showMenu();
+  }
+
+  suppressScreenHistory = false;
 }
 
 function getBackNavigationTargetScreen(currentScreen) {
@@ -2440,6 +2501,7 @@ setTheme("dark");
 applyDispButtonStyle();
 applyEditorFrame();
 setVisibleScreen("menu");
+syncScreenHistory("menu", { replace: true });
 
 summaryButton.addEventListener("click", () => {
   setSelectedCategory("summary");
@@ -2483,7 +2545,7 @@ backButtons.forEach((button) => {
 });
 
 if (dispPaletteBack) {
-  dispPaletteBack.addEventListener("click", showPreviousScreen);
+  dispPaletteBack.addEventListener("click", handleBackNavigation);
 }
 
 dispSwatches.forEach((button) => {
@@ -2538,6 +2600,9 @@ input.addEventListener("keydown", (event) => {
 
 input.addEventListener("input", applyEditorFrame);
 window.addEventListener("resize", applyEditorFrame);
+window.addEventListener("popstate", (event) => {
+  restoreScreenFromHistory(event.state || { screen: "menu" });
+});
 setupBackSwipeGesture();
 
 window.__JCL_APP_READY = true;
