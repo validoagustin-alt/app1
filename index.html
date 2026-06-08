@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-44">
+  <link rel="stylesheet" href="styles.css?v=app-version-45">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v44</div>
+      <div class="app-version" aria-label="Version de la app">v45</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-44"></script>
+  <script src="app.js?v=app-version-45"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -309,6 +309,52 @@
         panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
       }
 
+      function fitFallbackEditorColumns(input, targetColumns, maxFontSizePx, minFontSizePx) {
+        var computedStyle;
+        var paddingLeft;
+        var paddingRight;
+        var availableWidth;
+        var ruler;
+        var low;
+        var high;
+        var index;
+        var mid;
+        if (!input || !targetColumns) {
+          return;
+        }
+        computedStyle = window.getComputedStyle ? window.getComputedStyle(input) : input.style;
+        paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+        paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+        availableWidth = Math.max(0, input.clientWidth - paddingLeft - paddingRight);
+        if (!availableWidth) {
+          return;
+        }
+        ruler = document.createElement("span");
+        ruler.textContent = new Array(targetColumns + 1).join("0");
+        ruler.style.position = "absolute";
+        ruler.style.visibility = "hidden";
+        ruler.style.whiteSpace = "pre";
+        ruler.style.pointerEvents = "none";
+        ruler.style.fontFamily = computedStyle.fontFamily;
+        ruler.style.fontWeight = computedStyle.fontWeight;
+        ruler.style.letterSpacing = computedStyle.letterSpacing;
+        ruler.style.fontVariantLigatures = "none";
+        document.body.appendChild(ruler);
+        low = minFontSizePx;
+        high = maxFontSizePx;
+        for (index = 0; index < 10; index += 1) {
+          mid = (low + high) / 2;
+          ruler.style.fontSize = mid + "px";
+          if (ruler.getBoundingClientRect().width <= availableWidth) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+        document.body.removeChild(ruler);
+        input.style.fontSize = Math.max(minFontSizePx, Math.min(low, maxFontSizePx)).toFixed(2) + "px";
+      }
+
       function resetFallbackSwipePanel(panel) {
         if (!panel) {
           return;
@@ -412,7 +458,7 @@
           var touch;
           var deltaX;
           var deltaY;
-          if (!tracking || !panel || !event.touches || event.touches.length !== 1) {
+          if (!tracking || !event.touches || event.touches.length !== 1) {
             return;
           }
           touch = event.touches[0];
@@ -649,7 +695,6 @@
         input.style.resize = "none";
         input.style.overflowX = "auto";
         input.style.overflowY = "hidden";
-        input.style.fontSize = "16px";
         input.style.lineHeight = "1.5";
         input.style.webkitTextSizeAdjust = "100%";
         input.style.backgroundColor = "#000";
@@ -659,6 +704,7 @@
         input.style.maxHeight = "none";
         input.style.overflowY = "hidden";
         input.style.height = "auto";
+        fitFallbackEditorColumns(input, 72, 16, 6.5);
         input.style.height = Math.max(minHeight, input.scrollHeight + 2) + "px";
       }
 

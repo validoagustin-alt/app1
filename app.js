@@ -1846,6 +1846,49 @@ function getActiveScreenPanel() {
   return null;
 }
 
+function fitEditorColumns(targetInput, targetColumns, maxFontSizePx = 16, minFontSizePx = 6.5) {
+  if (!targetInput || !targetColumns) {
+    return;
+  }
+
+  const computedStyle = window.getComputedStyle(targetInput);
+  const paddingLeft = Number.parseFloat(computedStyle.paddingLeft) || 0;
+  const paddingRight = Number.parseFloat(computedStyle.paddingRight) || 0;
+  const availableWidth = Math.max(0, targetInput.clientWidth - paddingLeft - paddingRight);
+
+  if (!availableWidth) {
+    return;
+  }
+
+  const ruler = document.createElement("span");
+  ruler.textContent = "0".repeat(targetColumns);
+  ruler.style.position = "absolute";
+  ruler.style.visibility = "hidden";
+  ruler.style.whiteSpace = "pre";
+  ruler.style.pointerEvents = "none";
+  ruler.style.fontFamily = computedStyle.fontFamily;
+  ruler.style.fontWeight = computedStyle.fontWeight;
+  ruler.style.letterSpacing = computedStyle.letterSpacing;
+  ruler.style.fontVariantLigatures = "none";
+  document.body.appendChild(ruler);
+
+  let low = minFontSizePx;
+  let high = maxFontSizePx;
+
+  for (let index = 0; index < 10; index += 1) {
+    const mid = (low + high) / 2;
+    ruler.style.fontSize = `${mid}px`;
+    if (ruler.getBoundingClientRect().width <= availableWidth) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  document.body.removeChild(ruler);
+  targetInput.style.fontSize = `${Math.max(minFontSizePx, Math.min(low, maxFontSizePx)).toFixed(2)}px`;
+}
+
 function applySwipePanelOffset(panel, offset, withTransition = false) {
   if (!panel) {
     return;
@@ -1971,7 +2014,7 @@ function setupBackSwipeGesture() {
   }, { passive: true });
 
   document.addEventListener("touchmove", (event) => {
-    if (!backSwipeTracking || !backSwipePanel || !event.touches || event.touches.length !== 1) {
+    if (!backSwipeTracking || !event.touches || event.touches.length !== 1) {
       return;
     }
 
@@ -2186,7 +2229,6 @@ function applyEditorFrame() {
     input.style.maxWidth = "calc(100vw - 16px)";
     input.style.margin = "14px 0 0 calc(50% - 50vw + 8px)";
     input.style.resize = "none";
-    input.style.fontSize = "16px";
     input.style.lineHeight = "1.5";
     input.style.webkitTextSizeAdjust = "100%";
   } else {
@@ -2205,6 +2247,10 @@ function applyEditorFrame() {
   input.style.maxHeight = "none";
   input.style.overflowY = "hidden";
   input.style.height = "auto";
+
+  if (isMobile) {
+    fitEditorColumns(input, 72);
+  }
 
   const desiredHeight = Math.max(minHeight, input.scrollHeight + 2);
   input.style.height = `${desiredHeight}px`;
