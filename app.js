@@ -23,6 +23,8 @@ let backSwipeStartY = 0;
 let backSwipeTracking = false;
 let backSwipeDragging = false;
 let backSwipePanel = null;
+let backSwipeStartScreen = "";
+let backSwipeTargetScreen = "";
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1814,6 +1816,18 @@ function handleBackNavigation() {
   showMenu();
 }
 
+function getBackNavigationTargetScreen(currentScreen) {
+  if (currentScreen === "disp-palette") {
+    return previousScreen || "explanation";
+  }
+
+  if (currentScreen === "summary" || currentScreen === "explanation") {
+    return "menu";
+  }
+
+  return "";
+}
+
 function getActiveScreenPanel() {
   const currentScreen = document.body.dataset.screen || "menu";
 
@@ -1852,6 +1866,83 @@ function resetSwipePanel(panel) {
   panel.style.boxShadow = "";
 }
 
+function prepareBackSwipePreview(currentScreen, targetScreen) {
+  const activePanel = getPanelForScreen(currentScreen);
+  const targetPanel = getPanelForScreen(targetScreen);
+
+  if (!activePanel || !targetScreen) {
+    return null;
+  }
+
+  if (targetPanel) {
+    targetPanel.hidden = false;
+  }
+
+  document.body.dataset.backPreview = targetScreen;
+
+  const rect = activePanel.getBoundingClientRect();
+  activePanel.style.position = "fixed";
+  activePanel.style.left = `${rect.left}px`;
+  activePanel.style.top = `${rect.top}px`;
+  activePanel.style.width = `${rect.width}px`;
+  activePanel.style.height = `${rect.height}px`;
+  activePanel.style.maxWidth = `${rect.width}px`;
+  activePanel.style.margin = "0";
+  activePanel.style.zIndex = "30";
+  activePanel.style.pointerEvents = "none";
+
+  applySwipePanelOffset(activePanel, 0, false);
+  return activePanel;
+}
+
+function cleanupBackSwipePreview(restoreScreen = true) {
+  const activePanel = backSwipePanel;
+  const startScreen = backSwipeStartScreen || (document.body.dataset.screen || "menu");
+
+  if (activePanel) {
+    resetSwipePanel(activePanel);
+    activePanel.style.position = "";
+    activePanel.style.left = "";
+    activePanel.style.top = "";
+    activePanel.style.width = "";
+    activePanel.style.height = "";
+    activePanel.style.maxWidth = "";
+    activePanel.style.margin = "";
+    activePanel.style.zIndex = "";
+    activePanel.style.pointerEvents = "";
+  }
+
+  delete document.body.dataset.backPreview;
+
+  if (restoreScreen) {
+    setVisibleScreen(startScreen);
+  }
+
+  backSwipePanel = null;
+  backSwipeStartScreen = "";
+  backSwipeTargetScreen = "";
+}
+
+function getPanelForScreen(screenName) {
+  if (screenName === "menu") {
+    return inputPanel;
+  }
+
+  if (screenName === "summary") {
+    return summaryPanel;
+  }
+
+  if (screenName === "explanation") {
+    return resultsPanel;
+  }
+
+  if (screenName === "disp-palette") {
+    return dispPalettePanel;
+  }
+
+  return null;
+}
+
 function setupBackSwipeGesture() {
   document.addEventListener("touchstart", (event) => {
     if (!event.touches || event.touches.length !== 1) {
@@ -1872,9 +1963,11 @@ function setupBackSwipeGesture() {
     const touch = event.touches[0];
     backSwipeStartX = touch.clientX;
     backSwipeStartY = touch.clientY;
-    backSwipePanel = getActiveScreenPanel();
+    backSwipeStartScreen = currentScreen;
+    backSwipeTargetScreen = getBackNavigationTargetScreen(currentScreen);
+    backSwipePanel = null;
     backSwipeDragging = false;
-    backSwipeTracking = backSwipeStartX <= 96 && Boolean(backSwipePanel);
+    backSwipeTracking = backSwipeStartX <= 96 && Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
   }, { passive: true });
 
   document.addEventListener("touchmove", (event) => {
@@ -1893,21 +1986,30 @@ function setupBackSwipeGesture() {
       return;
     }
 
-    if (!backSwipeDragging) {
-      if (deltaY > 16 && deltaY > deltaX) {
-        backSwipeTracking = false;
-        backSwipePanel = null;
-        return;
+      if (!backSwipeDragging) {
+        if (deltaY > 16 && deltaY > deltaX) {
+          backSwipeTracking = false;
+          backSwipePanel = null;
+          backSwipeStartScreen = "";
+          backSwipeTargetScreen = "";
+          return;
+        }
+
+        if (deltaX < 14 || deltaX < deltaY) {
+          return;
+        }
+
+        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+        if (!backSwipePanel) {
+          backSwipeTracking = false;
+          backSwipeStartScreen = "";
+          backSwipeTargetScreen = "";
+          return;
+        }
+        backSwipeDragging = true;
       }
 
-      if (deltaX < 14 || deltaX < deltaY) {
-        return;
-      }
-
-      backSwipeDragging = true;
-    }
-
-    event.preventDefault();
+      event.preventDefault();
     applySwipePanelOffset(backSwipePanel, Math.min(deltaX, window.innerWidth * 0.94), false);
   }, { passive: false });
 
@@ -1915,7 +2017,7 @@ function setupBackSwipeGesture() {
     if (!backSwipeTracking || !event.changedTouches || event.changedTouches.length !== 1) {
       backSwipeTracking = false;
       backSwipeDragging = false;
-      backSwipePanel = null;
+      cleanupBackSwipePreview(true);
       return;
     }
 
@@ -1926,16 +2028,16 @@ function setupBackSwipeGesture() {
     const shouldNavigate = backSwipeDragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
     backSwipeTracking = false;
     backSwipeDragging = false;
-    backSwipePanel = null;
 
     if (!activePanel) {
+      cleanupBackSwipePreview(true);
       return;
     }
 
     if (shouldNavigate) {
       applySwipePanelOffset(activePanel, window.innerWidth, true);
       window.setTimeout(() => {
-        resetSwipePanel(activePanel);
+        cleanupBackSwipePreview(false);
         handleBackNavigation();
       }, 180);
       return;
@@ -1943,7 +2045,7 @@ function setupBackSwipeGesture() {
 
     applySwipePanelOffset(activePanel, 0, true);
     window.setTimeout(() => {
-      resetSwipePanel(activePanel);
+      cleanupBackSwipePreview(true);
     }, 220);
   }, { passive: true });
 
@@ -1952,12 +2054,15 @@ function setupBackSwipeGesture() {
     if (activePanel) {
       applySwipePanelOffset(activePanel, 0, true);
       window.setTimeout(() => {
-        resetSwipePanel(activePanel);
+        cleanupBackSwipePreview(true);
       }, 220);
+      backSwipeTracking = false;
+      backSwipeDragging = false;
+      return;
     }
     backSwipeTracking = false;
     backSwipeDragging = false;
-    backSwipePanel = null;
+    cleanupBackSwipePreview(true);
   }, { passive: true });
 }
 

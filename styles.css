@@ -1559,6 +1559,22 @@ body[data-screen="summary"] .workspace {
   margin-top: 0;
 }
 
+body[data-back-preview="menu"] .topbar {
+  display: grid !important;
+}
+
+body[data-back-preview="menu"] .hero {
+  display: grid !important;
+}
+
+body[data-back-preview="menu"] .app-shell {
+  padding-top: 14px !important;
+}
+
+body[data-back-preview="menu"] .workspace {
+  margin-top: 0 !important;
+}
+
 @media (max-width: 920px) {
   .hero {
     width: calc(100% - 16px) !important;
