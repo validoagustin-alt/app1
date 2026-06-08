@@ -23,8 +23,6 @@ let backSwipeStartY = 0;
 let backSwipeTracking = false;
 let backSwipeDragging = false;
 let backSwipePanel = null;
-let backSwipePreviewPanel = null;
-let backSwipeSourcePanel = null;
 let backSwipeStartScreen = "";
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
@@ -2018,15 +2016,9 @@ function applySwipePanelOffset(panel, offset, withTransition = false) {
     return;
   }
 
-  const previewProgress = Math.max(0, Math.min(0.58, offset / Math.max(window.innerWidth * 0.55, 1)));
   panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
   panel.style.transform = `translateX(${Math.max(0, offset)}px)`;
   panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
-
-  if (backSwipePreviewPanel) {
-    backSwipePreviewPanel.style.transition = withTransition ? "opacity 220ms ease-out" : "none";
-    backSwipePreviewPanel.style.opacity = `${previewProgress}`;
-  }
 }
 
 function resetSwipePanel(panel) {
@@ -2042,7 +2034,6 @@ function resetSwipePanel(panel) {
 function prepareBackSwipePreview(currentScreen, targetScreen) {
   const activePanel = getPanelForScreen(currentScreen);
   const targetPanel = getPanelForScreen(targetScreen);
-  let dragClone;
 
   if (!activePanel || !targetScreen) {
     return null;
@@ -2050,40 +2041,25 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
 
   if (targetPanel) {
     targetPanel.hidden = false;
-    targetPanel.style.opacity = "0";
   }
-
-  backSwipePreviewPanel = targetPanel || null;
 
   document.body.dataset.backPreview = targetScreen;
 
   const rect = activePanel.getBoundingClientRect();
-  dragClone = activePanel.cloneNode(true);
-  dragClone.removeAttribute("id");
-  dragClone.setAttribute("aria-hidden", "true");
-  dragClone.style.visibility = "visible";
-  dragClone.style.opacity = "1";
-  dragClone.style.position = "fixed";
-  dragClone.style.left = `${rect.left}px`;
-  dragClone.style.top = `${rect.top}px`;
-  dragClone.style.width = `${rect.width}px`;
-  dragClone.style.height = `${rect.height}px`;
-  dragClone.style.maxWidth = `${rect.width}px`;
-  dragClone.style.margin = "0";
-  dragClone.style.zIndex = "30";
-  dragClone.style.pointerEvents = "none";
-  dragClone.style.touchAction = "none";
-  dragClone.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
-  dragClone.style.backdropFilter = "none";
-  dragClone.style.webkitBackdropFilter = "none";
-  document.body.appendChild(dragClone);
+  activePanel.style.position = "fixed";
+  activePanel.style.left = `${rect.left}px`;
+  activePanel.style.top = `${rect.top}px`;
+  activePanel.style.width = `${rect.width}px`;
+  activePanel.style.height = `${rect.height}px`;
+  activePanel.style.maxWidth = `${rect.width}px`;
+  activePanel.style.margin = "0";
+  activePanel.style.zIndex = "30";
+  activePanel.style.pointerEvents = "none";
+  activePanel.dataset.prevTouchAction = activePanel.style.touchAction || "";
+  activePanel.style.touchAction = "none";
 
-  activePanel.dataset.prevVisibility = activePanel.style.visibility || "";
-  activePanel.style.visibility = "hidden";
-  backSwipeSourcePanel = activePanel;
-
-  applySwipePanelOffset(dragClone, 0, false);
-  return dragClone;
+  applySwipePanelOffset(activePanel, 0, false);
+  return activePanel;
 }
 
 function cleanupBackSwipePreview(restoreScreen = true) {
@@ -2092,17 +2068,17 @@ function cleanupBackSwipePreview(restoreScreen = true) {
 
   if (activePanel) {
     resetSwipePanel(activePanel);
-    activePanel.remove();
-  }
-
-  if (backSwipeSourcePanel) {
-    backSwipeSourcePanel.style.visibility = backSwipeSourcePanel.dataset.prevVisibility || "";
-    delete backSwipeSourcePanel.dataset.prevVisibility;
-  }
-
-  if (backSwipePreviewPanel) {
-    backSwipePreviewPanel.style.transition = "";
-    backSwipePreviewPanel.style.opacity = "";
+    activePanel.style.position = "";
+    activePanel.style.left = "";
+    activePanel.style.top = "";
+    activePanel.style.width = "";
+    activePanel.style.height = "";
+    activePanel.style.maxWidth = "";
+    activePanel.style.margin = "";
+    activePanel.style.zIndex = "";
+    activePanel.style.pointerEvents = "";
+    activePanel.style.touchAction = activePanel.dataset.prevTouchAction || "";
+    delete activePanel.dataset.prevTouchAction;
   }
 
   delete document.body.dataset.backPreview;
@@ -2112,8 +2088,6 @@ function cleanupBackSwipePreview(restoreScreen = true) {
   }
 
   backSwipePanel = null;
-  backSwipePreviewPanel = null;
-  backSwipeSourcePanel = null;
   backSwipeStartScreen = "";
   backSwipeTargetScreen = "";
 }
