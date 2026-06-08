@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-54">
+  <link rel="stylesheet" href="styles.css?v=app-version-55">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v54</div>
+      <div class="app-version" aria-label="Version de la app">v55</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-54"></script>
+  <script src="app.js?v=app-version-55"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -325,7 +325,7 @@
         if (!panel) {
           return;
         }
-        previewProgress = Math.max(0, Math.min(1, offset / Math.max(window.innerWidth * 0.32, 1)));
+        previewProgress = Math.max(0, Math.min(0.58, offset / Math.max(window.innerWidth * 0.55, 1)));
         panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
         panel.style.transform = "translateX(" + Math.max(0, offset) + "px)";
         panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
@@ -431,6 +431,12 @@
         activePanel.style.pointerEvents = "none";
         activePanel.setAttribute("data-prev-touch-action", activePanel.style.touchAction || "");
         activePanel.style.touchAction = "none";
+        activePanel.setAttribute("data-prev-background", activePanel.style.background || "");
+        activePanel.setAttribute("data-prev-backdrop-filter", activePanel.style.backdropFilter || "");
+        activePanel.setAttribute("data-prev-webkit-backdrop-filter", activePanel.style.webkitBackdropFilter || "");
+        activePanel.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
+        activePanel.style.backdropFilter = "none";
+        activePanel.style.webkitBackdropFilter = "none";
         applyFallbackSwipeOffset(activePanel, 0, false);
         return activePanel;
       }
@@ -449,6 +455,12 @@
           activePanel.style.pointerEvents = "";
           activePanel.style.touchAction = activePanel.getAttribute("data-prev-touch-action") || "";
           activePanel.removeAttribute("data-prev-touch-action");
+          activePanel.style.background = activePanel.getAttribute("data-prev-background") || "";
+          activePanel.style.backdropFilter = activePanel.getAttribute("data-prev-backdrop-filter") || "";
+          activePanel.style.webkitBackdropFilter = activePanel.getAttribute("data-prev-webkit-backdrop-filter") || "";
+          activePanel.removeAttribute("data-prev-background");
+          activePanel.removeAttribute("data-prev-backdrop-filter");
+          activePanel.removeAttribute("data-prev-webkit-backdrop-filter");
         }
         if (window.__fallbackBackPreviewPanel) {
           window.__fallbackBackPreviewPanel.style.transition = "";

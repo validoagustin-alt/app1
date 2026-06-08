@@ -2017,7 +2017,7 @@ function applySwipePanelOffset(panel, offset, withTransition = false) {
     return;
   }
 
-  const previewProgress = Math.max(0, Math.min(1, offset / Math.max(window.innerWidth * 0.32, 1)));
+  const previewProgress = Math.max(0, Math.min(0.58, offset / Math.max(window.innerWidth * 0.55, 1)));
   panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
   panel.style.transform = `translateX(${Math.max(0, offset)}px)`;
   panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
@@ -2067,6 +2067,12 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   activePanel.style.pointerEvents = "none";
   activePanel.dataset.prevTouchAction = activePanel.style.touchAction || "";
   activePanel.style.touchAction = "none";
+  activePanel.dataset.prevBackground = activePanel.style.background || "";
+  activePanel.dataset.prevBackdropFilter = activePanel.style.backdropFilter || "";
+  activePanel.dataset.prevWebkitBackdropFilter = activePanel.style.webkitBackdropFilter || "";
+  activePanel.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
+  activePanel.style.backdropFilter = "none";
+  activePanel.style.webkitBackdropFilter = "none";
 
   applySwipePanelOffset(activePanel, 0, false);
   return activePanel;
@@ -2089,6 +2095,12 @@ function cleanupBackSwipePreview(restoreScreen = true) {
     activePanel.style.pointerEvents = "";
     activePanel.style.touchAction = activePanel.dataset.prevTouchAction || "";
     delete activePanel.dataset.prevTouchAction;
+    activePanel.style.background = activePanel.dataset.prevBackground || "";
+    activePanel.style.backdropFilter = activePanel.dataset.prevBackdropFilter || "";
+    activePanel.style.webkitBackdropFilter = activePanel.dataset.prevWebkitBackdropFilter || "";
+    delete activePanel.dataset.prevBackground;
+    delete activePanel.dataset.prevBackdropFilter;
+    delete activePanel.dataset.prevWebkitBackdropFilter;
   }
 
   if (backSwipePreviewPanel) {
