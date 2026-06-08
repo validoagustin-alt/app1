@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-53">
+  <link rel="stylesheet" href="styles.css?v=app-version-54">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v53</div>
+      <div class="app-version" aria-label="Version de la app">v54</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-53"></script>
+  <script src="app.js?v=app-version-54"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -321,12 +321,18 @@
       }
 
       function applyFallbackSwipeOffset(panel, offset, withTransition) {
+        var previewProgress;
         if (!panel) {
           return;
         }
+        previewProgress = Math.max(0, Math.min(1, offset / Math.max(window.innerWidth * 0.32, 1)));
         panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
         panel.style.transform = "translateX(" + Math.max(0, offset) + "px)";
         panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
+        if (window.__fallbackBackPreviewPanel) {
+          window.__fallbackBackPreviewPanel.style.transition = withTransition ? "opacity 220ms ease-out" : "none";
+          window.__fallbackBackPreviewPanel.style.opacity = String(previewProgress);
+        }
       }
 
       function fitFallbackEditorColumns(input, targetColumns, maxFontSizePx, minFontSizePx) {
@@ -409,7 +415,9 @@
         }
         if (targetPanel) {
           targetPanel.hidden = false;
+          targetPanel.style.opacity = "0";
         }
+        window.__fallbackBackPreviewPanel = targetPanel || null;
         document.body.setAttribute("data-back-preview", targetScreen);
         rect = activePanel.getBoundingClientRect();
         activePanel.style.position = "fixed";
@@ -442,6 +450,11 @@
           activePanel.style.touchAction = activePanel.getAttribute("data-prev-touch-action") || "";
           activePanel.removeAttribute("data-prev-touch-action");
         }
+        if (window.__fallbackBackPreviewPanel) {
+          window.__fallbackBackPreviewPanel.style.transition = "";
+          window.__fallbackBackPreviewPanel.style.opacity = "";
+        }
+        window.__fallbackBackPreviewPanel = null;
         document.body.removeAttribute("data-back-preview");
         if (restoreScreen) {
           showFallbackScreen(startScreen || "menu");

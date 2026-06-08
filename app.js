@@ -23,6 +23,7 @@ let backSwipeStartY = 0;
 let backSwipeTracking = false;
 let backSwipeDragging = false;
 let backSwipePanel = null;
+let backSwipePreviewPanel = null;
 let backSwipeStartScreen = "";
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
@@ -2016,9 +2017,15 @@ function applySwipePanelOffset(panel, offset, withTransition = false) {
     return;
   }
 
+  const previewProgress = Math.max(0, Math.min(1, offset / Math.max(window.innerWidth * 0.32, 1)));
   panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
   panel.style.transform = `translateX(${Math.max(0, offset)}px)`;
   panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
+
+  if (backSwipePreviewPanel) {
+    backSwipePreviewPanel.style.transition = withTransition ? "opacity 220ms ease-out" : "none";
+    backSwipePreviewPanel.style.opacity = `${previewProgress}`;
+  }
 }
 
 function resetSwipePanel(panel) {
@@ -2041,7 +2048,10 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
 
   if (targetPanel) {
     targetPanel.hidden = false;
+    targetPanel.style.opacity = "0";
   }
+
+  backSwipePreviewPanel = targetPanel || null;
 
   document.body.dataset.backPreview = targetScreen;
 
@@ -2081,6 +2091,11 @@ function cleanupBackSwipePreview(restoreScreen = true) {
     delete activePanel.dataset.prevTouchAction;
   }
 
+  if (backSwipePreviewPanel) {
+    backSwipePreviewPanel.style.transition = "";
+    backSwipePreviewPanel.style.opacity = "";
+  }
+
   delete document.body.dataset.backPreview;
 
   if (restoreScreen) {
@@ -2088,6 +2103,7 @@ function cleanupBackSwipePreview(restoreScreen = true) {
   }
 
   backSwipePanel = null;
+  backSwipePreviewPanel = null;
   backSwipeStartScreen = "";
   backSwipeTargetScreen = "";
 }
