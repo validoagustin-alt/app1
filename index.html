@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-60">
+  <link rel="stylesheet" href="styles.css?v=app-version-61">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v60</div>
+      <div class="app-version" aria-label="Version de la app">v61</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-    <script src="app.js?v=app-version-60"></script>
+    <script src="app.js?v=app-version-61"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -254,6 +254,12 @@
       }
 
       var suppressScreenHistory = false;
+      var screenScrollPositions = {
+        menu: 0,
+        summary: 0,
+        explanation: 0,
+        "disp-palette": 0
+      };
 
       function syncFallbackHistory(screenName, options) {
         var state;
@@ -274,43 +280,70 @@
         window.history.pushState(state, "", window.location.href);
       }
 
-      function scrollFallbackPanel(panel) {
-        if (panel && panel.scrollIntoView) {
-          panel.scrollIntoView();
-        }
+      function getFallbackScrollTop() {
+        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      }
+
+      function saveFallbackScrollPosition(screenName) {
+        screenName = screenName || document.body.getAttribute("data-screen") || "menu";
+        screenScrollPositions[screenName] = getFallbackScrollTop();
+      }
+
+      function focusFallbackPanelWithoutScroll(panel) {
         if (panel && panel.focus) {
           try {
+            panel.focus({ preventScroll: true });
+          } catch (error) {
             panel.focus();
-          } catch (error) {}
+          }
         }
+      }
+
+      function restoreFallbackScrollPosition(screenName, options) {
+        var top;
+        options = options || {};
+        top = options.forceTop ? 0 : (screenScrollPositions[screenName] || 0);
+        window.requestAnimationFrame(function () {
+          window.scrollTo(0, top);
+        });
       }
 
       function showFallbackSummary(options) {
         var panel = byId("summary-panel");
         options = options || {};
+        if (options.captureCurrent !== false) {
+          saveFallbackScrollPosition();
+        }
         analyze(false);
         showFallbackScreen("summary");
         syncFallbackHistory("summary", { replace: options.replaceHistory });
-        window.scrollTo(0, 0);
-        scrollFallbackPanel(panel);
+        focusFallbackPanelWithoutScroll(panel);
+        restoreFallbackScrollPosition("summary", { forceTop: !options.preserveScroll });
       }
 
       function showFallbackExplanation(options) {
         var panel = byId("results-panel");
         options = options || {};
+        if (options.captureCurrent !== false) {
+          saveFallbackScrollPosition();
+        }
         analyze(false);
         showFallbackScreen("explanation");
         syncFallbackHistory("explanation", { replace: options.replaceHistory });
-        window.scrollTo(0, 0);
-        scrollFallbackPanel(panel);
+        focusFallbackPanelWithoutScroll(panel);
+        restoreFallbackScrollPosition("explanation", { forceTop: !options.preserveScroll });
       }
 
       function showFallbackMenu(options) {
         var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
         options = options || {};
+        if (options.captureCurrent !== false) {
+          saveFallbackScrollPosition();
+        }
         showFallbackScreen("menu");
         syncFallbackHistory("menu", { replace: options.replaceHistory });
-        scrollFallbackPanel(inputPanel);
+        focusFallbackPanelWithoutScroll(inputPanel);
+        restoreFallbackScrollPosition("menu", { forceTop: !options.preserveScroll });
       }
 
       function handleFallbackBackNavigation() {
@@ -320,13 +353,15 @@
         if (currentScreen === "menu") {
           return;
         }
+        saveFallbackScrollPosition(currentScreen);
         if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
           window.history.back();
           return;
         }
         if (currentScreen === "disp-palette") {
           showFallbackScreen("explanation");
-          scrollFallbackPanel(resultsPanel);
+          focusFallbackPanelWithoutScroll(resultsPanel);
+          restoreFallbackScrollPosition("explanation", { forceTop: false });
           return;
         }
         showFallbackMenu();
@@ -932,11 +967,11 @@
         var targetScreen = state && state.screen ? state.screen : "menu";
         suppressScreenHistory = true;
         if (targetScreen === "summary") {
-          showFallbackSummary();
+          showFallbackSummary({ captureCurrent: false, preserveScroll: true });
         } else if (targetScreen === "explanation") {
-          showFallbackExplanation();
+          showFallbackExplanation({ captureCurrent: false, preserveScroll: true });
         } else {
-          showFallbackMenu();
+          showFallbackMenu({ captureCurrent: false, preserveScroll: true });
         }
         suppressScreenHistory = false;
       }
