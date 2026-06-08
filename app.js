@@ -2011,6 +2011,15 @@ function setupBackSwipeGesture() {
     backSwipePanel = null;
     backSwipeDragging = false;
     backSwipeTracking = backSwipeStartX <= 96 && Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
+
+    if (backSwipeTracking) {
+      backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+      if (!backSwipePanel) {
+        backSwipeTracking = false;
+        backSwipeStartScreen = "";
+        backSwipeTargetScreen = "";
+      }
+    }
   }, { passive: true });
 
   document.addEventListener("touchmove", (event) => {
@@ -2032,21 +2041,13 @@ function setupBackSwipeGesture() {
     if (!backSwipeDragging) {
       if (deltaY > 16 && deltaY > deltaX) {
         backSwipeTracking = false;
-        backSwipePanel = null;
+        cleanupBackSwipePreview(true);
         backSwipeStartScreen = "";
         backSwipeTargetScreen = "";
         return;
       }
 
       if (deltaX < 4 || deltaX * 0.9 < deltaY) {
-        return;
-      }
-
-      backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
-      if (!backSwipePanel) {
-        backSwipeTracking = false;
-        backSwipeStartScreen = "";
-        backSwipeTargetScreen = "";
         return;
       }
       backSwipeDragging = true;
