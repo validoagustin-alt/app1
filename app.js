@@ -24,6 +24,7 @@ let backSwipeTracking = false;
 let backSwipeDragging = false;
 let backSwipePanel = null;
 let backSwipePreviewPanel = null;
+let backSwipeSourcePanel = null;
 let backSwipeStartScreen = "";
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
@@ -2041,6 +2042,7 @@ function resetSwipePanel(panel) {
 function prepareBackSwipePreview(currentScreen, targetScreen) {
   const activePanel = getPanelForScreen(currentScreen);
   const targetPanel = getPanelForScreen(targetScreen);
+  let dragClone;
 
   if (!activePanel || !targetScreen) {
     return null;
@@ -2056,26 +2058,30 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   document.body.dataset.backPreview = targetScreen;
 
   const rect = activePanel.getBoundingClientRect();
-  activePanel.style.position = "fixed";
-  activePanel.style.left = `${rect.left}px`;
-  activePanel.style.top = `${rect.top}px`;
-  activePanel.style.width = `${rect.width}px`;
-  activePanel.style.height = `${rect.height}px`;
-  activePanel.style.maxWidth = `${rect.width}px`;
-  activePanel.style.margin = "0";
-  activePanel.style.zIndex = "30";
-  activePanel.style.pointerEvents = "none";
-  activePanel.dataset.prevTouchAction = activePanel.style.touchAction || "";
-  activePanel.style.touchAction = "none";
-  activePanel.dataset.prevBackground = activePanel.style.background || "";
-  activePanel.dataset.prevBackdropFilter = activePanel.style.backdropFilter || "";
-  activePanel.dataset.prevWebkitBackdropFilter = activePanel.style.webkitBackdropFilter || "";
-  activePanel.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
-  activePanel.style.backdropFilter = "none";
-  activePanel.style.webkitBackdropFilter = "none";
+  activePanel.dataset.prevVisibility = activePanel.style.visibility || "";
+  activePanel.style.visibility = "hidden";
+  backSwipeSourcePanel = activePanel;
 
-  applySwipePanelOffset(activePanel, 0, false);
-  return activePanel;
+  dragClone = activePanel.cloneNode(true);
+  dragClone.removeAttribute("id");
+  dragClone.setAttribute("aria-hidden", "true");
+  dragClone.style.position = "fixed";
+  dragClone.style.left = `${rect.left}px`;
+  dragClone.style.top = `${rect.top}px`;
+  dragClone.style.width = `${rect.width}px`;
+  dragClone.style.height = `${rect.height}px`;
+  dragClone.style.maxWidth = `${rect.width}px`;
+  dragClone.style.margin = "0";
+  dragClone.style.zIndex = "30";
+  dragClone.style.pointerEvents = "none";
+  dragClone.style.touchAction = "none";
+  dragClone.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
+  dragClone.style.backdropFilter = "none";
+  dragClone.style.webkitBackdropFilter = "none";
+  document.body.appendChild(dragClone);
+
+  applySwipePanelOffset(dragClone, 0, false);
+  return dragClone;
 }
 
 function cleanupBackSwipePreview(restoreScreen = true) {
@@ -2084,23 +2090,12 @@ function cleanupBackSwipePreview(restoreScreen = true) {
 
   if (activePanel) {
     resetSwipePanel(activePanel);
-    activePanel.style.position = "";
-    activePanel.style.left = "";
-    activePanel.style.top = "";
-    activePanel.style.width = "";
-    activePanel.style.height = "";
-    activePanel.style.maxWidth = "";
-    activePanel.style.margin = "";
-    activePanel.style.zIndex = "";
-    activePanel.style.pointerEvents = "";
-    activePanel.style.touchAction = activePanel.dataset.prevTouchAction || "";
-    delete activePanel.dataset.prevTouchAction;
-    activePanel.style.background = activePanel.dataset.prevBackground || "";
-    activePanel.style.backdropFilter = activePanel.dataset.prevBackdropFilter || "";
-    activePanel.style.webkitBackdropFilter = activePanel.dataset.prevWebkitBackdropFilter || "";
-    delete activePanel.dataset.prevBackground;
-    delete activePanel.dataset.prevBackdropFilter;
-    delete activePanel.dataset.prevWebkitBackdropFilter;
+    activePanel.remove();
+  }
+
+  if (backSwipeSourcePanel) {
+    backSwipeSourcePanel.style.visibility = backSwipeSourcePanel.dataset.prevVisibility || "";
+    delete backSwipeSourcePanel.dataset.prevVisibility;
   }
 
   if (backSwipePreviewPanel) {
@@ -2116,6 +2111,7 @@ function cleanupBackSwipePreview(restoreScreen = true) {
 
   backSwipePanel = null;
   backSwipePreviewPanel = null;
+  backSwipeSourcePanel = null;
   backSwipeStartScreen = "";
   backSwipeTargetScreen = "";
 }

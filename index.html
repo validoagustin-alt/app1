@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-55">
+  <link rel="stylesheet" href="styles.css?v=app-version-56">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v55</div>
+      <div class="app-version" aria-label="Version de la app">v56</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-55"></script>
+  <script src="app.js?v=app-version-56"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -409,6 +409,7 @@
       function prepareFallbackBackPreview(currentScreen, targetScreen) {
         var activePanel = getFallbackPanelForScreen(currentScreen);
         var targetPanel = getFallbackPanelForScreen(targetScreen);
+        var dragClone;
         var rect;
         if (!activePanel || !targetScreen) {
           return null;
@@ -420,52 +421,44 @@
         window.__fallbackBackPreviewPanel = targetPanel || null;
         document.body.setAttribute("data-back-preview", targetScreen);
         rect = activePanel.getBoundingClientRect();
-        activePanel.style.position = "fixed";
-        activePanel.style.left = rect.left + "px";
-        activePanel.style.top = rect.top + "px";
-        activePanel.style.width = rect.width + "px";
-        activePanel.style.height = rect.height + "px";
-        activePanel.style.maxWidth = rect.width + "px";
-        activePanel.style.margin = "0";
-        activePanel.style.zIndex = "30";
-        activePanel.style.pointerEvents = "none";
-        activePanel.setAttribute("data-prev-touch-action", activePanel.style.touchAction || "");
-        activePanel.style.touchAction = "none";
-        activePanel.setAttribute("data-prev-background", activePanel.style.background || "");
-        activePanel.setAttribute("data-prev-backdrop-filter", activePanel.style.backdropFilter || "");
-        activePanel.setAttribute("data-prev-webkit-backdrop-filter", activePanel.style.webkitBackdropFilter || "");
-        activePanel.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
-        activePanel.style.backdropFilter = "none";
-        activePanel.style.webkitBackdropFilter = "none";
-        applyFallbackSwipeOffset(activePanel, 0, false);
-        return activePanel;
+        activePanel.setAttribute("data-prev-visibility", activePanel.style.visibility || "");
+        activePanel.style.visibility = "hidden";
+        window.__fallbackBackSourcePanel = activePanel;
+        dragClone = activePanel.cloneNode(true);
+        dragClone.removeAttribute("id");
+        dragClone.setAttribute("aria-hidden", "true");
+        dragClone.style.position = "fixed";
+        dragClone.style.left = rect.left + "px";
+        dragClone.style.top = rect.top + "px";
+        dragClone.style.width = rect.width + "px";
+        dragClone.style.height = rect.height + "px";
+        dragClone.style.maxWidth = rect.width + "px";
+        dragClone.style.margin = "0";
+        dragClone.style.zIndex = "30";
+        dragClone.style.pointerEvents = "none";
+        dragClone.style.touchAction = "none";
+        dragClone.style.background = "linear-gradient(180deg, rgba(var(--panel-rgb), 0.985), rgba(var(--panel-rgb), 0.965))";
+        dragClone.style.backdropFilter = "none";
+        dragClone.style.webkitBackdropFilter = "none";
+        document.body.appendChild(dragClone);
+        applyFallbackSwipeOffset(dragClone, 0, false);
+        return dragClone;
       }
 
       function cleanupFallbackBackPreview(activePanel, startScreen, restoreScreen) {
         if (activePanel) {
           resetFallbackSwipePanel(activePanel);
-          activePanel.style.position = "";
-          activePanel.style.left = "";
-          activePanel.style.top = "";
-          activePanel.style.width = "";
-          activePanel.style.height = "";
-          activePanel.style.maxWidth = "";
-          activePanel.style.margin = "";
-          activePanel.style.zIndex = "";
-          activePanel.style.pointerEvents = "";
-          activePanel.style.touchAction = activePanel.getAttribute("data-prev-touch-action") || "";
-          activePanel.removeAttribute("data-prev-touch-action");
-          activePanel.style.background = activePanel.getAttribute("data-prev-background") || "";
-          activePanel.style.backdropFilter = activePanel.getAttribute("data-prev-backdrop-filter") || "";
-          activePanel.style.webkitBackdropFilter = activePanel.getAttribute("data-prev-webkit-backdrop-filter") || "";
-          activePanel.removeAttribute("data-prev-background");
-          activePanel.removeAttribute("data-prev-backdrop-filter");
-          activePanel.removeAttribute("data-prev-webkit-backdrop-filter");
+          activePanel.remove();
+        }
+        if (window.__fallbackBackSourcePanel) {
+          window.__fallbackBackSourcePanel.style.visibility = window.__fallbackBackSourcePanel.getAttribute("data-prev-visibility") || "";
+          window.__fallbackBackSourcePanel.removeAttribute("data-prev-visibility");
         }
         if (window.__fallbackBackPreviewPanel) {
           window.__fallbackBackPreviewPanel.style.transition = "";
           window.__fallbackBackPreviewPanel.style.opacity = "";
         }
+        window.__fallbackBackSourcePanel = null;
         window.__fallbackBackPreviewPanel = null;
         document.body.removeAttribute("data-back-preview");
         if (restoreScreen) {
