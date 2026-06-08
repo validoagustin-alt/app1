@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-51">
+  <link rel="stylesheet" href="styles.css?v=app-version-52">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v51</div>
+      <div class="app-version" aria-label="Version de la app">v52</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-51"></script>
+  <script src="app.js?v=app-version-52"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -138,6 +138,26 @@
         {
           title: "Endevor batch SCL",
           jcl: "//ENDVOR  JOB (ACCT),'ENDEVOR',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  ADD ELEMENT 'PAYCALC'\n      FROM DSNAME 'DEV.SOURCE.COBOL' .\n/*"
+        },
+        {
+          title: "Endevor generate element",
+          jcl: "//ENDGEN  JOB (ACCT),'ENDEVOR GEN',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'QA'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'ONLINE'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  GENERATE ELEMENT 'PAYMENU'\n      OPTIONS CCID 'GEN100'\n              COMMENT 'GENERATE DESDE BATCH' .\n/*"
+        },
+        {
+          title: "Endevor retrieve element",
+          jcl: "//ENDRET  JOB (ACCT),'ENDEVOR RET',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//OUTFILE  DD DSN=DEV.EXTRACT.PAYROLL(PAYRPT),\n//            DISP=SHR\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'PROD'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'BATCH'\n      TYPE 'COBOL'\n      STAGE NUMBER 2 .\n  RETRIEVE ELEMENT 'PAYRPT'\n      TO DDNAME 'OUTFILE'\n      OPTIONS CCID 'RET200'\n              COMMENT 'RETRIEVE DESDE PRODUCCION' .\n/*"
+        },
+        {
+          title: "Endevor move element",
+          jcl: "//ENDMOV  JOB (ACCT),'ENDEVOR MOVE',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'QA'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'ONLINE'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  MOVE ELEMENT 'PAYEDIT'\n      TO ENVIRONMENT 'QA'\n         SYSTEM 'PAYROLL'\n         SUBSYSTEM 'ONLINE'\n         TYPE 'COBOL'\n         STAGE NUMBER 2\n      OPTIONS CCID 'MOV300'\n              COMMENT 'PROMOCION INTERNA DE STAGE' .\n/*"
+        },
+        {
+          title: "Endevor delete element",
+          jcl: "//ENDDEL  JOB (ACCT),'ENDEVOR DEL',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'BATCH'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  DELETE ELEMENT 'PAYTEST'\n      OPTIONS CCID 'DEL400'\n              COMMENT 'BAJA CONTROLADA DESDE BATCH' .\n/*"
+        },
+        {
+          title: "Endevor update element",
+          jcl: "//ENDUPD  JOB (ACCT),'ENDEVOR UPD',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'BATCH'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  UPDATE ELEMENT 'PAYCALC'\n      FROM DSNAME 'DEV.SOURCE.COBOL(PAYCALC)'\n      OPTIONS CCID 'UPD500'\n              COMMENT 'ACTUALIZACION DESDE DATASET EXTERNO' .\n/*"
         }
       ];
 
