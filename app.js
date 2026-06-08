@@ -2144,18 +2144,6 @@ function setupBackSwipeGesture() {
         } catch (error) {}
       }
 
-      if (backSwipeTracking) {
-        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
-        if (!backSwipePanel) {
-          backSwipeTracking = false;
-          backSwipePointerId = null;
-          backSwipeCaptureElement = null;
-          backSwipeStartScreen = "";
-          backSwipeTargetScreen = "";
-          return;
-        }
-        event.preventDefault();
-      }
     }, { passive: false });
 
     document.addEventListener("pointermove", (event) => {
@@ -2185,6 +2173,16 @@ function setupBackSwipeGesture() {
         }
 
         if (deltaX < 4 || deltaX * 0.9 < deltaY) {
+          return;
+        }
+
+        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+        if (!backSwipePanel) {
+          backSwipeTracking = false;
+          backSwipePointerId = null;
+          backSwipeCaptureElement = null;
+          backSwipeStartScreen = "";
+          backSwipeTargetScreen = "";
           return;
         }
         backSwipeDragging = true;
@@ -2285,18 +2283,8 @@ function setupBackSwipeGesture() {
     backSwipeTargetScreen = getBackNavigationTargetScreen(currentScreen);
     backSwipePanel = null;
     backSwipeDragging = false;
-    backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
+      backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
 
-      if (backSwipeTracking) {
-        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
-        if (!backSwipePanel) {
-          backSwipeTracking = false;
-          backSwipeStartScreen = "";
-          backSwipeTargetScreen = "";
-          return;
-        }
-        event.preventDefault();
-      }
   }, { passive: false });
 
   document.addEventListener("touchmove", (event) => {
@@ -2325,6 +2313,14 @@ function setupBackSwipeGesture() {
       }
 
       if (deltaX < 4 || deltaX * 0.9 < deltaY) {
+        return;
+      }
+
+      backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+      if (!backSwipePanel) {
+        backSwipeTracking = false;
+        backSwipeStartScreen = "";
+        backSwipeTargetScreen = "";
         return;
       }
       backSwipeDragging = true;
