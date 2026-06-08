@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-50">
+  <link rel="stylesheet" href="styles.css?v=app-version-51">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v50</div>
+      <div class="app-version" aria-label="Version de la app">v51</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-50"></script>
+  <script src="app.js?v=app-version-51"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -476,6 +476,10 @@
                 targetScreen = "";
                 pointerId = null;
                 captureElement = null;
+                return;
+              }
+              if (event.preventDefault) {
+                event.preventDefault();
               }
             }
           });
@@ -612,15 +616,19 @@
           panel = null;
           dragging = false;
           tracking = !!targetScreen && !!getFallbackActivePanel();
-          if (tracking) {
-            panel = prepareFallbackBackPreview(startScreen, targetScreen);
-            if (!panel) {
-              tracking = false;
-              startScreen = "";
-              targetScreen = "";
+            if (tracking) {
+              panel = prepareFallbackBackPreview(startScreen, targetScreen);
+              if (!panel) {
+                tracking = false;
+                startScreen = "";
+                targetScreen = "";
+                return;
+              }
+              if (event.preventDefault) {
+                event.preventDefault();
+              }
             }
-          }
-        });
+          });
 
         on(document, "touchmove", function (event) {
           var touch;

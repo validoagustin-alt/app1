@@ -2032,9 +2032,11 @@ function setupBackSwipeGesture() {
           backSwipeCaptureElement = null;
           backSwipeStartScreen = "";
           backSwipeTargetScreen = "";
+          return;
         }
+        event.preventDefault();
       }
-    }, { passive: true });
+    }, { passive: false });
 
     document.addEventListener("pointermove", (event) => {
       if (!backSwipeTracking || backSwipePointerId !== event.pointerId) {
@@ -2165,15 +2167,17 @@ function setupBackSwipeGesture() {
     backSwipeDragging = false;
     backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
 
-    if (backSwipeTracking) {
-      backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
-      if (!backSwipePanel) {
-        backSwipeTracking = false;
-        backSwipeStartScreen = "";
-        backSwipeTargetScreen = "";
+      if (backSwipeTracking) {
+        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+        if (!backSwipePanel) {
+          backSwipeTracking = false;
+          backSwipeStartScreen = "";
+          backSwipeTargetScreen = "";
+          return;
+        }
+        event.preventDefault();
       }
-    }
-  }, { passive: true });
+  }, { passive: false });
 
   document.addEventListener("touchmove", (event) => {
     if (!backSwipeTracking || !event.touches || event.touches.length !== 1) {
