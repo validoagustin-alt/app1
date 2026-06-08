@@ -2541,7 +2541,7 @@ applyDispButtonStyle();
 applyEditorFrame();
 setVisibleScreen("menu");
 if (window.history && "scrollRestoration" in window.history) {
-  window.history.scrollRestoration = "manual";
+  window.history.scrollRestoration = shouldUseNativeAppleBackSwipe() ? "auto" : "manual";
 }
 syncScreenHistory("menu", { replace: true });
 
