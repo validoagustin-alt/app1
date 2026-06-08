@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-62">
+  <link rel="stylesheet" href="styles.css?v=app-version-63">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v62</div>
+      <div class="app-version" aria-label="Version de la app">v63</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-    <script src="app.js?v=app-version-62"></script>
+    <script src="app.js?v=app-version-63"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -269,6 +269,7 @@
           return;
         }
         state = { screen: screenName };
+        state.scrollTop = screenScrollPositions[screenName] || 0;
         currentState = window.history.state || {};
         if (options.replace || !currentState.screen) {
           window.history.replaceState(state, "", window.location.href);
@@ -965,6 +966,9 @@
 
       function restoreFallbackScreenFromHistory(state) {
         var targetScreen = state && state.screen ? state.screen : "menu";
+        if (state && typeof state.scrollTop === "number") {
+          screenScrollPositions[targetScreen] = state.scrollTop;
+        }
         suppressScreenHistory = true;
         if (targetScreen === "summary") {
           showFallbackSummary({ captureCurrent: false, preserveScroll: true });
@@ -1016,6 +1020,9 @@
       }
       setTheme("dark");
       applyStableEditorFrame();
+      if (window.history && "scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
       on(byId("jcl-input"), "input", applyStableEditorFrame);
       on(window, "resize", applyStableEditorFrame);
       setupFallbackBackSwipeGesture();
