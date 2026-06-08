@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-49">
+  <link rel="stylesheet" href="styles.css?v=app-version-50">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v49</div>
+      <div class="app-version" aria-label="Version de la app">v50</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-49"></script>
+  <script src="app.js?v=app-version-50"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -401,6 +401,8 @@
         activePanel.style.margin = "0";
         activePanel.style.zIndex = "30";
         activePanel.style.pointerEvents = "none";
+        activePanel.setAttribute("data-prev-touch-action", activePanel.style.touchAction || "");
+        activePanel.style.touchAction = "none";
         applyFallbackSwipeOffset(activePanel, 0, false);
         return activePanel;
       }
@@ -417,6 +419,8 @@
           activePanel.style.margin = "";
           activePanel.style.zIndex = "";
           activePanel.style.pointerEvents = "";
+          activePanel.style.touchAction = activePanel.getAttribute("data-prev-touch-action") || "";
+          activePanel.removeAttribute("data-prev-touch-action");
         }
         document.body.removeAttribute("data-back-preview");
         if (restoreScreen) {
@@ -433,6 +437,7 @@
         var startScreen = "";
         var targetScreen = "";
         var pointerId = null;
+        var captureElement = null;
 
         if (window.PointerEvent) {
           on(document, "pointerdown", function (event) {
@@ -457,6 +462,12 @@
             dragging = false;
             tracking = !!targetScreen && !!getFallbackActivePanel();
             pointerId = tracking ? event.pointerId : null;
+            captureElement = tracking ? getFallbackActivePanel() : null;
+            if (captureElement && captureElement.setPointerCapture) {
+              try {
+                captureElement.setPointerCapture(event.pointerId);
+              } catch (error) {}
+            }
             if (tracking) {
               panel = prepareFallbackBackPreview(startScreen, targetScreen);
               if (!panel) {
@@ -464,6 +475,7 @@
                 startScreen = "";
                 targetScreen = "";
                 pointerId = null;
+                captureElement = null;
               }
             }
           });
@@ -486,6 +498,7 @@
               if (deltaY > 16 && deltaY > deltaX) {
                 tracking = false;
                 pointerId = null;
+                captureElement = null;
                 cleanupFallbackBackPreview(panel, startScreen, true);
                 panel = null;
                 startScreen = "";
@@ -517,6 +530,12 @@
             shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
             tracking = false;
             dragging = false;
+            if (captureElement && captureElement.releasePointerCapture) {
+              try {
+                captureElement.releasePointerCapture(event.pointerId);
+              } catch (error) {}
+            }
+            captureElement = null;
             pointerId = null;
             panel = null;
             if (!activePanel) {
@@ -562,6 +581,12 @@
             panel = null;
             startScreen = "";
             targetScreen = "";
+            if (captureElement && captureElement.releasePointerCapture) {
+              try {
+                captureElement.releasePointerCapture(event.pointerId);
+              } catch (error) {}
+            }
+            captureElement = null;
             pointerId = null;
           });
 

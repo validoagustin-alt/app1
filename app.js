@@ -26,6 +26,7 @@ let backSwipePanel = null;
 let backSwipeStartScreen = "";
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
+let backSwipeCaptureElement = null;
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1934,6 +1935,8 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   activePanel.style.margin = "0";
   activePanel.style.zIndex = "30";
   activePanel.style.pointerEvents = "none";
+  activePanel.dataset.prevTouchAction = activePanel.style.touchAction || "";
+  activePanel.style.touchAction = "none";
 
   applySwipePanelOffset(activePanel, 0, false);
   return activePanel;
@@ -1954,6 +1957,8 @@ function cleanupBackSwipePreview(restoreScreen = true) {
     activePanel.style.margin = "";
     activePanel.style.zIndex = "";
     activePanel.style.pointerEvents = "";
+    activePanel.style.touchAction = activePanel.dataset.prevTouchAction || "";
+    delete activePanel.dataset.prevTouchAction;
   }
 
   delete document.body.dataset.backPreview;
@@ -2011,12 +2016,20 @@ function setupBackSwipeGesture() {
       backSwipeDragging = false;
       backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
       backSwipePointerId = backSwipeTracking ? event.pointerId : null;
+      backSwipeCaptureElement = backSwipeTracking ? getActiveScreenPanel() : null;
+
+      if (backSwipeCaptureElement && backSwipeCaptureElement.setPointerCapture) {
+        try {
+          backSwipeCaptureElement.setPointerCapture(event.pointerId);
+        } catch (error) {}
+      }
 
       if (backSwipeTracking) {
         backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
         if (!backSwipePanel) {
           backSwipeTracking = false;
           backSwipePointerId = null;
+          backSwipeCaptureElement = null;
           backSwipeStartScreen = "";
           backSwipeTargetScreen = "";
         }
@@ -2040,11 +2053,12 @@ function setupBackSwipeGesture() {
 
       if (!backSwipeDragging) {
         if (deltaY > 16 && deltaY > deltaX) {
-          backSwipeTracking = false;
-          backSwipePointerId = null;
-          cleanupBackSwipePreview(true);
-          backSwipeStartScreen = "";
-          backSwipeTargetScreen = "";
+        backSwipeTracking = false;
+        backSwipePointerId = null;
+        backSwipeCaptureElement = null;
+        cleanupBackSwipePreview(true);
+        backSwipeStartScreen = "";
+        backSwipeTargetScreen = "";
           return;
         }
 
@@ -2070,6 +2084,12 @@ function setupBackSwipeGesture() {
       backSwipeTracking = false;
       backSwipeDragging = false;
       backSwipePointerId = null;
+      if (backSwipeCaptureElement && backSwipeCaptureElement.releasePointerCapture) {
+        try {
+          backSwipeCaptureElement.releasePointerCapture(event.pointerId);
+        } catch (error) {}
+      }
+      backSwipeCaptureElement = null;
 
       if (!activePanel) {
         cleanupBackSwipePreview(true);
@@ -2109,6 +2129,12 @@ function setupBackSwipeGesture() {
       backSwipeTracking = false;
       backSwipeDragging = false;
       backSwipePointerId = null;
+      if (backSwipeCaptureElement && backSwipeCaptureElement.releasePointerCapture) {
+        try {
+          backSwipeCaptureElement.releasePointerCapture(event.pointerId);
+        } catch (error) {}
+      }
+      backSwipeCaptureElement = null;
     }, { passive: true });
 
     return;
