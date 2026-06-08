@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-59">
+  <link rel="stylesheet" href="styles.css?v=app-version-60">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v59</div>
+      <div class="app-version" aria-label="Version de la app">v60</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-    <script src="app.js?v=app-version-59"></script>
+    <script src="app.js?v=app-version-60"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -485,6 +485,10 @@
       }
 
       function setupFallbackBackSwipeGesture() {
+        if (shouldUseNativeAppleBackSwipe()) {
+          return;
+        }
+
         var startX = 0;
         var startY = 0;
         var tracking = false;
@@ -935,6 +939,14 @@
           showFallbackMenu();
         }
         suppressScreenHistory = false;
+      }
+
+      function shouldUseNativeAppleBackSwipe() {
+        var ua = navigator.userAgent || "";
+        var platform = navigator.platform || "";
+        var isIOS = /iPhone|iPad|iPod/i.test(ua);
+        var isIPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+        return isIOS || isIPadOS;
       }
 
       populateExamples();

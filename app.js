@@ -2173,7 +2173,19 @@ function getPanelForScreen(screenName) {
   return null;
 }
 
+function shouldUseNativeAppleBackSwipe() {
+  const ua = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isIPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return isIOS || isIPadOS;
+}
+
 function setupBackSwipeGesture() {
+  if (shouldUseNativeAppleBackSwipe()) {
+    return;
+  }
+
   if (window.PointerEvent) {
     document.addEventListener("pointerdown", (event) => {
       if (event.pointerType !== "touch" || !event.isPrimary) {
