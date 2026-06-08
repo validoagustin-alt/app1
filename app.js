@@ -2029,30 +2029,30 @@ function setupBackSwipeGesture() {
       return;
     }
 
-      if (!backSwipeDragging) {
-        if (deltaY > 16 && deltaY > deltaX) {
-          backSwipeTracking = false;
-          backSwipePanel = null;
-          backSwipeStartScreen = "";
-          backSwipeTargetScreen = "";
-          return;
-        }
-
-        if (deltaX < 14 || deltaX < deltaY) {
-          return;
-        }
-
-        backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
-        if (!backSwipePanel) {
-          backSwipeTracking = false;
-          backSwipeStartScreen = "";
-          backSwipeTargetScreen = "";
-          return;
-        }
-        backSwipeDragging = true;
+    if (!backSwipeDragging) {
+      if (deltaY > 16 && deltaY > deltaX) {
+        backSwipeTracking = false;
+        backSwipePanel = null;
+        backSwipeStartScreen = "";
+        backSwipeTargetScreen = "";
+        return;
       }
 
-      event.preventDefault();
+      if (deltaX < 4 || deltaX * 0.9 < deltaY) {
+        return;
+      }
+
+      backSwipePanel = prepareBackSwipePreview(backSwipeStartScreen, backSwipeTargetScreen);
+      if (!backSwipePanel) {
+        backSwipeTracking = false;
+        backSwipeStartScreen = "";
+        backSwipeTargetScreen = "";
+        return;
+      }
+      backSwipeDragging = true;
+    }
+
+    event.preventDefault();
     applySwipePanelOffset(backSwipePanel, Math.min(deltaX, window.innerWidth * 0.94), false);
   }, { passive: false });
 
