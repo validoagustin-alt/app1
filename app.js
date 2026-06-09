@@ -1886,8 +1886,7 @@ function setVisibleScreen(screenName) {
 function getScreenHistoryState(screenName) {
   return {
     screen: screenName,
-    previousScreen: screenName === "disp-palette" ? previousScreen || "explanation" : "",
-    scrollTop: screenScrollPositions[screenName] || 0
+    previousScreen: screenName === "disp-palette" ? previousScreen || "explanation" : ""
   };
 }
 
@@ -2004,9 +2003,6 @@ function handleBackNavigation() {
 
 function restoreScreenFromHistory(state) {
   const targetScreen = state && state.screen ? state.screen : "menu";
-  if (state && typeof state.scrollTop === "number") {
-    screenScrollPositions[targetScreen] = state.scrollTop;
-  }
   suppressScreenHistory = true;
 
   if (targetScreen === "summary") {
@@ -2540,9 +2536,6 @@ setTheme("dark");
 applyDispButtonStyle();
 applyEditorFrame();
 setVisibleScreen("menu");
-if (window.history && "scrollRestoration" in window.history) {
-  window.history.scrollRestoration = shouldUseNativeAppleBackSwipe() ? "auto" : "manual";
-}
 syncScreenHistory("menu", { replace: true });
 
 summaryButton.addEventListener("click", () => {
