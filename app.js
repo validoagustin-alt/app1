@@ -28,12 +28,6 @@ let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
 let backSwipeCaptureElement = null;
 let suppressScreenHistory = false;
-const screenScrollPositions = {
-  menu: 0,
-  summary: 0,
-  explanation: 0,
-  "disp-palette": 0
-};
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1846,17 +1840,25 @@ function selectDispButtonStyle(button) {
   showPreviousScreen();
 }
 
-function getCurrentScrollTop() {
-  return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+function scrollToSummary() {
+  try {
+    summaryPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    summaryPanel.scrollIntoView();
+  }
+
+  try {
+    summaryPanel.focus({ preventScroll: true });
+  } catch (error) {
+    summaryPanel.focus();
+  }
 }
 
-function saveScreenScrollPosition(screenName = document.body.dataset.screen || "menu") {
-  screenScrollPositions[screenName] = getCurrentScrollTop();
-}
-
-function focusPanelWithoutScroll(panel) {
-  if (!panel || !panel.focus) {
-    return;
+function scrollToPanel(panel) {
+  try {
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    panel.scrollIntoView();
   }
 
   try {
@@ -1864,13 +1866,6 @@ function focusPanelWithoutScroll(panel) {
   } catch (error) {
     panel.focus();
   }
-}
-
-function restoreScreenScrollPosition(screenName, options = {}) {
-  const top = options.forceTop ? 0 : (screenScrollPositions[screenName] || 0);
-  window.requestAnimationFrame(() => {
-    window.scrollTo({ top, behavior: "auto" });
-  });
 }
 
 function setVisibleScreen(screenName) {
@@ -1915,66 +1910,54 @@ function syncScreenHistory(screenName, options = {}) {
 }
 
 function showMenu(options = {}) {
-  if (options.captureCurrent !== false) {
-    saveScreenScrollPosition();
-  }
-
   setVisibleScreen("menu");
   syncScreenHistory("menu", { replace: options.replaceHistory });
+  try {
+    inputPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    inputPanel.scrollIntoView();
+  }
+
   applyEditorFrame();
-  focusPanelWithoutScroll(inputPanel);
-  restoreScreenScrollPosition("menu", { forceTop: !options.preserveScroll });
 }
 
 function showSummaryScreen(options = {}) {
-  if (options.captureCurrent !== false) {
-    saveScreenScrollPosition();
-  }
-
   const analysis = analyzeJcl(input.value);
   updateLineCount(analysis.length);
   renderSummary(analysis);
   setVisibleScreen("summary");
   syncScreenHistory("summary", { replace: options.replaceHistory });
-  focusPanelWithoutScroll(summaryPanel);
-  restoreScreenScrollPosition("summary", { forceTop: !options.preserveScroll });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  scrollToPanel(summaryPanel);
 }
 
 function showExplanationScreen(options = {}) {
-  if (options.captureCurrent !== false) {
-    saveScreenScrollPosition();
-  }
-
   const analysis = analyzeJcl(input.value);
   renderAnalysis(analysis);
   setVisibleScreen("explanation");
   syncScreenHistory("explanation", { replace: options.replaceHistory });
-  focusPanelWithoutScroll(resultsPanel);
-  restoreScreenScrollPosition("explanation", { forceTop: !options.preserveScroll });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  scrollToPanel(resultsPanel);
 }
 
 function showDispPaletteScreen(options = {}) {
-  if (options.captureCurrent !== false) {
-    saveScreenScrollPosition();
-  }
-
   previousScreen = options.previousScreen || document.body.dataset.screen || "explanation";
   setVisibleScreen("disp-palette");
   syncScreenHistory("disp-palette", { replace: options.replaceHistory });
-  focusPanelWithoutScroll(dispPalettePanel);
-  restoreScreenScrollPosition("disp-palette", { forceTop: !options.preserveScroll });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  scrollToPanel(dispPalettePanel);
 }
 
 function showPreviousScreen(options = {}) {
-  if (options.captureCurrent !== false) {
-    saveScreenScrollPosition();
-  }
-
   const targetScreen = previousScreen || "explanation";
+  const panels = {
+    menu: inputPanel,
+    summary: summaryPanel,
+    explanation: resultsPanel
+  };
   setVisibleScreen(targetScreen);
   syncScreenHistory(targetScreen, { replace: options.replaceHistory });
-  focusPanelWithoutScroll(getPanelForScreen(targetScreen) || resultsPanel);
-  restoreScreenScrollPosition(targetScreen, { forceTop: !options.preserveScroll });
+  scrollToPanel(panels[targetScreen] || resultsPanel);
 }
 
 function handleBackNavigation() {
@@ -1985,8 +1968,6 @@ function handleBackNavigation() {
   if (!targetScreen || currentScreen === "menu") {
     return;
   }
-
-  saveScreenScrollPosition(currentScreen);
 
   if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
     window.history.back();
@@ -2006,17 +1987,13 @@ function restoreScreenFromHistory(state) {
   suppressScreenHistory = true;
 
   if (targetScreen === "summary") {
-    showSummaryScreen({ captureCurrent: false, preserveScroll: true });
+    showSummaryScreen();
   } else if (targetScreen === "explanation") {
-    showExplanationScreen({ captureCurrent: false, preserveScroll: true });
+    showExplanationScreen();
   } else if (targetScreen === "disp-palette") {
-    showDispPaletteScreen({
-      captureCurrent: false,
-      preserveScroll: true,
-      previousScreen: state.previousScreen || "explanation"
-    });
+    showDispPaletteScreen({ previousScreen: state.previousScreen || "explanation" });
   } else {
-    showMenu({ captureCurrent: false, preserveScroll: true });
+    showMenu();
   }
 
   suppressScreenHistory = false;
