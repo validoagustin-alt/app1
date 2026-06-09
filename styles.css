@@ -1570,7 +1570,11 @@ body[data-back-preview="menu"] .hero {
 }
 
 body[data-back-preview="menu"] .app-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 8 !important;
   padding-top: 14px !important;
+  overflow-y: auto !important;
 }
 
 body[data-back-preview="menu"] .workspace {
