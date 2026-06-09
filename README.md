@@ -10,7 +10,7 @@ La app funciona sin servidor y sin dependencias externas. El análisis es local 
 
 ## Qué reconoce
 
-- Selector con 10 ejemplos de JCL: SORT, copia de miembros PDS, copia secuencial, borrado de dataset, creación VSAM KSDS, renombrado de dataset, creación de PDS, GDG, TWS/OPC y Endevor batch.
+- Selector con 15 ejemplos de JCL: SORT, copia de miembros PDS, copia secuencial, borrado de dataset, creación VSAM KSDS, renombrado de dataset, creación de PDS, GDG, TWS/OPC y Endevor batch.
 - Sentencias `JOB`, `EXEC`, `DD`, `PROC`, `PEND`, `SET`, `IF`, `THEN`, `ELSE` y `ENDIF`.
 - Comentarios `//*`.
 - Directivas de tailoring `//*%OPC` usadas por IBM Z Workload Scheduler/TWS.
@@ -29,5 +29,5 @@ Si tienes Node.js disponible:
 
 ```powershell
 node --check app.js
-node tests\smoke-test.js
+node smoke-test.js
 ```
