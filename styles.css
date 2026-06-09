@@ -1737,12 +1737,9 @@ body[data-back-preview="menu"] .workspace {
 .input-panel .category-actions #summary-button,
 .input-panel .category-actions #analyze-button,
 .input-panel .category-actions #clear-button {
-  -webkit-appearance: none !important;
-  appearance: none !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  position: relative !important;
   width: 100% !important;
   min-width: 0 !important;
   min-height: 46px !important;
@@ -1771,7 +1768,6 @@ body[data-back-preview="menu"] .workspace {
   border-color: rgba(205, 214, 232, 0.86) !important;
   background: #101722 !important;
   color: #e6ebf2 !important;
-  box-shadow: inset 0 0 0 1px rgba(205, 214, 232, 0.72) !important;
 }
 
 @media (max-width: 920px) {
