@@ -2182,10 +2182,6 @@ function shouldUseNativeAppleBackSwipe() {
 }
 
 function setupBackSwipeGesture() {
-  if (shouldUseNativeAppleBackSwipe()) {
-    return;
-  }
-
   if (window.PointerEvent) {
     document.addEventListener("pointerdown", (event) => {
       if (event.pointerType !== "touch" || !event.isPrimary) {
