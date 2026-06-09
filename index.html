@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-66">
+  <link rel="stylesheet" href="styles.css?v=app-version-67">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v66</div>
+      <div class="app-version" aria-label="Version de la app">v67</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-    <script src="app.js?v=app-version-66"></script>
+    <script src="app.js?v=app-version-67"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -365,6 +365,11 @@
         panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
       }
 
+      function shouldCompleteFallbackBackSwipe(dragging, deltaX, deltaY, lastOffset) {
+        var offset = Math.max(deltaX, lastOffset);
+        return dragging && offset >= Math.max(52, window.innerWidth * 0.14) && deltaY <= 110;
+      }
+
       function fitFallbackEditorColumns(input, targetColumns, maxFontSizePx, minFontSizePx) {
         var computedStyle;
         var paddingLeft;
@@ -494,6 +499,7 @@
         var targetScreen = "";
         var pointerId = null;
         var captureElement = null;
+        var lastOffset = 0;
 
         if (window.PointerEvent) {
           on(document, "pointerdown", function (event) {
@@ -516,6 +522,7 @@
             targetScreen = getFallbackBackTargetScreen(currentScreen);
             panel = null;
             dragging = false;
+            lastOffset = 0;
             tracking = !!targetScreen && !!getFallbackActivePanel();
             pointerId = tracking ? event.pointerId : null;
             captureElement = tracking ? getFallbackActivePanel() : null;
@@ -538,6 +545,7 @@
               if (dragging) {
                 applyFallbackSwipeOffset(panel, 0, false);
               }
+              lastOffset = 0;
               return;
             }
             if (!dragging) {
@@ -568,7 +576,8 @@
             if (event.preventDefault) {
               event.preventDefault();
             }
-            applyFallbackSwipeOffset(panel, Math.min(deltaX, window.innerWidth * 0.94), false);
+            lastOffset = Math.min(deltaX, window.innerWidth * 0.94);
+            applyFallbackSwipeOffset(panel, lastOffset, false);
           });
 
           on(document, "pointerup", function (event) {
@@ -582,7 +591,7 @@
             deltaX = event.clientX - startX;
             deltaY = Math.abs(event.clientY - startY);
             activePanel = panel;
-            shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+            shouldNavigate = shouldCompleteFallbackBackSwipe(dragging, deltaX, deltaY, lastOffset);
             tracking = false;
             dragging = false;
             if (captureElement && captureElement.releasePointerCapture) {
@@ -593,6 +602,7 @@
             captureElement = null;
             pointerId = null;
             panel = null;
+            lastOffset = 0;
             if (!activePanel) {
               cleanupFallbackBackPreview(activePanel, startScreen, true);
               startScreen = "";
@@ -624,16 +634,21 @@
             }
             activePanel = panel;
             if (activePanel) {
-              applyFallbackSwipeOffset(activePanel, 0, true);
+              var shouldNavigate = dragging && lastOffset >= Math.max(52, window.innerWidth * 0.14);
+              applyFallbackSwipeOffset(activePanel, shouldNavigate ? window.innerWidth : 0, true);
               window.setTimeout(function () {
-                cleanupFallbackBackPreview(activePanel, startScreen, true);
-              }, 220);
+                cleanupFallbackBackPreview(activePanel, startScreen, !shouldNavigate);
+                if (shouldNavigate) {
+                  handleFallbackBackNavigation();
+                }
+              }, shouldNavigate ? 180 : 220);
             } else {
               cleanupFallbackBackPreview(activePanel, startScreen, true);
             }
             tracking = false;
             dragging = false;
             panel = null;
+            lastOffset = 0;
             startScreen = "";
             targetScreen = "";
             if (captureElement && captureElement.releasePointerCapture) {
@@ -666,6 +681,7 @@
           targetScreen = getFallbackBackTargetScreen(currentScreen);
           panel = null;
           dragging = false;
+          lastOffset = 0;
           tracking = !!targetScreen && !!getFallbackActivePanel();
         });
 
@@ -683,6 +699,7 @@
             if (dragging) {
               applyFallbackSwipeOffset(panel, 0, false);
             }
+            lastOffset = 0;
             return;
           }
           if (!dragging) {
@@ -709,7 +726,8 @@
           if (event.preventDefault) {
             event.preventDefault();
           }
-          applyFallbackSwipeOffset(panel, Math.min(deltaX, window.innerWidth * 0.94), false);
+          lastOffset = Math.min(deltaX, window.innerWidth * 0.94);
+          applyFallbackSwipeOffset(panel, lastOffset, false);
         });
 
         on(document, "touchend", function (event) {
@@ -731,10 +749,11 @@
           deltaX = touch.clientX - startX;
           deltaY = Math.abs(touch.clientY - startY);
           activePanel = panel;
-          shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+          shouldNavigate = shouldCompleteFallbackBackSwipe(dragging, deltaX, deltaY, lastOffset);
           tracking = false;
           dragging = false;
           panel = null;
+          lastOffset = 0;
           if (!activePanel) {
             cleanupFallbackBackPreview(activePanel, startScreen, true);
             startScreen = "";
@@ -762,13 +781,18 @@
         on(document, "touchcancel", function () {
           var activePanel = panel;
           if (activePanel) {
-            applyFallbackSwipeOffset(activePanel, 0, true);
+            var shouldNavigate = dragging && lastOffset >= Math.max(52, window.innerWidth * 0.14);
+            applyFallbackSwipeOffset(activePanel, shouldNavigate ? window.innerWidth : 0, true);
             window.setTimeout(function () {
-              cleanupFallbackBackPreview(activePanel, startScreen, true);
-            }, 220);
+              cleanupFallbackBackPreview(activePanel, startScreen, !shouldNavigate);
+              if (shouldNavigate) {
+                handleFallbackBackNavigation();
+              }
+            }, shouldNavigate ? 180 : 220);
             tracking = false;
             dragging = false;
             panel = null;
+            lastOffset = 0;
             startScreen = "";
             targetScreen = "";
             return;
@@ -776,6 +800,7 @@
           tracking = false;
           dragging = false;
           panel = null;
+          lastOffset = 0;
           cleanupFallbackBackPreview(activePanel, startScreen, true);
           startScreen = "";
           targetScreen = "";
