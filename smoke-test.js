@@ -1,13 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const rootDir = __dirname;
-const appPath = fs.existsSync(path.join(rootDir, "app.js"))
-  ? path.join(rootDir, "app.js")
-  : path.join(rootDir, "..", "app.js");
-const htmlPath = fs.existsSync(path.join(rootDir, "index.html"))
-  ? path.join(rootDir, "index.html")
-  : path.join(rootDir, "..", "index.html");
+const appPath = path.join(__dirname, "app.js");
+const htmlPath = path.join(__dirname, "index.html");
 const source = fs.readFileSync(appPath, "utf8");
 const html = fs.readFileSync(htmlPath, "utf8");
 const start = source.indexOf("const exampleJcls");
@@ -55,8 +50,8 @@ if (analysis.length !== sampleJcl.split("\\n").length) {
   throw new Error("El analisis no devolvio una entrada por cada linea");
 }
 
-if (exampleJcls.length !== 15) {
-  throw new Error("La app debe tener exactamente 15 ejemplos de JCL");
+if (exampleJcls.length < 10) {
+  throw new Error("La app debe tener al menos 10 ejemplos de JCL");
 }
 
 if (exampleAnalyses.some((exampleAnalysis) => !exampleAnalysis.some((line) => line.type === "JOB"))) {

@@ -1448,60 +1448,6 @@ textarea {
   transition: transform 220ms ease-out, box-shadow 220ms ease-out;
 }
 
-html.is-back-swipe-active,
-body.is-back-swipe-active {
-  overscroll-behavior-x: contain;
-}
-
-body.is-back-swipe-active {
-  overflow-x: hidden;
-}
-
-.back-swipe-underlay {
-  position: fixed;
-  inset: 0;
-  z-index: 25;
-  overflow: hidden auto;
-  pointer-events: none;
-  background: transparent;
-}
-
-.back-swipe-underlay .back-swipe-underlay-shell {
-  width: min(1260px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 22px 0 56px !important;
-}
-
-body[data-screen="summary"] .back-swipe-underlay .topbar,
-body[data-screen="explanation"] .back-swipe-underlay .topbar,
-body[data-screen="disp-palette"] .back-swipe-underlay .topbar {
-  display: grid !important;
-}
-
-body[data-screen="summary"] .back-swipe-underlay .hero,
-body[data-screen="explanation"] .back-swipe-underlay .hero,
-body[data-screen="disp-palette"] .back-swipe-underlay .hero {
-  display: grid !important;
-}
-
-.back-swipe-underlay .workspace {
-  display: grid !important;
-  margin-top: 0 !important;
-}
-
-.back-swipe-underlay .input-panel,
-.back-swipe-underlay .summary-panel,
-.back-swipe-underlay .results-panel,
-.back-swipe-underlay .disp-palette-panel {
-  display: block !important;
-  pointer-events: none;
-}
-
-.is-back-swipe-current {
-  will-change: transform;
-  touch-action: none !important;
-}
-
 .back-button {
   display: inline-flex;
   align-items: center;

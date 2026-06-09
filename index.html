@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-68">
+  <link rel="stylesheet" href="styles.css?v=app-version-69">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -16,7 +16,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v68</div>
+      <div class="app-version" aria-label="Version de la app">v69</div>
     </nav>
 
     <section class="workspace">
@@ -94,7 +94,7 @@
     </section>
   </main>
 
-    <script src="app.js?v=app-version-68"></script>
+    <script src="app.js?v=app-version-69"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -257,6 +257,7 @@
       }
 
       var suppressScreenHistory = false;
+      var savedFallbackMenuScrollY = 0;
 
       function syncFallbackHistory(screenName, options) {
         var state;
@@ -288,9 +289,52 @@
         }
       }
 
+      function getFallbackScrollY() {
+        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      }
+
+      function scrollFallbackWindowToY(targetY) {
+        var top = Math.max(0, Number(targetY) || 0);
+        try {
+          window.scrollTo({ top: top, left: 0, behavior: "auto" });
+        } catch (error) {
+          window.scrollTo(0, top);
+        }
+      }
+
+      function scrollFallbackWindowToYAfterLayout(targetY) {
+        var top = Math.max(0, Number(targetY) || 0);
+        var restore = function () {
+          scrollFallbackWindowToY(top);
+        };
+        if (window.requestAnimationFrame) {
+          window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(restore);
+          });
+          return;
+        }
+        window.setTimeout(restore, 0);
+      }
+
+      function rememberFallbackMenuScrollPosition() {
+        savedFallbackMenuScrollY = getFallbackScrollY();
+      }
+
+      function rememberFallbackMenuScrollPositionIfVisible() {
+        var currentScreen = document.body.getAttribute("data-screen") || "menu";
+        if (currentScreen === "menu" && !document.body.getAttribute("data-back-preview")) {
+          rememberFallbackMenuScrollPosition();
+        }
+      }
+
+      function restoreFallbackMenuScrollPosition() {
+        scrollFallbackWindowToYAfterLayout(savedFallbackMenuScrollY);
+      }
+
       function showFallbackSummary(options) {
         var panel = byId("summary-panel");
         options = options || {};
+        rememberFallbackMenuScrollPositionIfVisible();
         analyze(false);
         showFallbackScreen("summary");
         syncFallbackHistory("summary", { replace: options.replaceHistory });
@@ -301,6 +345,7 @@
       function showFallbackExplanation(options) {
         var panel = byId("results-panel");
         options = options || {};
+        rememberFallbackMenuScrollPositionIfVisible();
         analyze(false);
         showFallbackScreen("explanation");
         syncFallbackHistory("explanation", { replace: options.replaceHistory });
@@ -309,22 +354,16 @@
       }
 
       function showFallbackMenu(options) {
-        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
         options = options || {};
         showFallbackScreen("menu");
         syncFallbackHistory("menu", { replace: options.replaceHistory });
-        scrollFallbackPanel(inputPanel);
+        restoreFallbackMenuScrollPosition();
       }
 
       function handleFallbackBackNavigation() {
         var currentScreen = document.body.getAttribute("data-screen") || "menu";
-        var historyState = window.history ? window.history.state : null;
         var resultsPanel = byId("results-panel");
         if (currentScreen === "menu") {
-          return;
-        }
-        if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
-          window.history.back();
           return;
         }
         if (currentScreen === "disp-palette") {
@@ -332,7 +371,7 @@
           scrollFallbackPanel(resultsPanel);
           return;
         }
-        showFallbackMenu();
+        showFallbackMenu({ replaceHistory: true });
       }
 
       function getFallbackBackTargetScreen(currentScreen) {
@@ -446,10 +485,6 @@
         if (!activePanel || !targetScreen) {
           return null;
         }
-        if (targetPanel) {
-          targetPanel.hidden = false;
-        }
-        document.body.setAttribute("data-back-preview", targetScreen);
         rect = activePanel.getBoundingClientRect();
         activePanel.style.position = "fixed";
         activePanel.style.left = rect.left + "px";
@@ -462,11 +497,18 @@
         activePanel.style.pointerEvents = "none";
         activePanel.setAttribute("data-prev-touch-action", activePanel.style.touchAction || "");
         activePanel.style.touchAction = "none";
+        if (targetPanel) {
+          targetPanel.hidden = false;
+        }
+        document.body.setAttribute("data-back-preview", targetScreen);
+        if (targetScreen === "menu") {
+          scrollFallbackWindowToY(savedFallbackMenuScrollY);
+        }
         applyFallbackSwipeOffset(activePanel, 0, false);
         return activePanel;
       }
 
-      function cleanupFallbackBackPreview(activePanel, startScreen, restoreScreen) {
+      function cleanupFallbackBackPreview(activePanel, startScreen, restoreScreen, startScrollY) {
         if (activePanel) {
           resetFallbackSwipePanel(activePanel);
           activePanel.style.position = "";
@@ -484,6 +526,7 @@
         document.body.removeAttribute("data-back-preview");
         if (restoreScreen) {
           showFallbackScreen(startScreen || "menu");
+          scrollFallbackWindowToY(startScrollY || 0);
         }
       }
 
@@ -494,6 +537,7 @@
         var dragging = false;
         var panel = null;
         var startScreen = "";
+        var startScrollY = 0;
         var targetScreen = "";
         var pointerId = null;
         var captureElement = null;
@@ -509,6 +553,7 @@
               dragging = false;
               panel = null;
               startScreen = "";
+              startScrollY = 0;
               targetScreen = "";
               pointerId = null;
               return;
@@ -516,6 +561,7 @@
             startX = event.clientX;
             startY = event.clientY;
             startScreen = currentScreen;
+            startScrollY = getFallbackScrollY();
             targetScreen = getFallbackBackTargetScreen(currentScreen);
             panel = null;
             dragging = false;
@@ -548,7 +594,7 @@
                 tracking = false;
                 pointerId = null;
                 captureElement = null;
-                cleanupFallbackBackPreview(panel, startScreen, true);
+                cleanupFallbackBackPreview(panel, startScreen, true, startScrollY);
                 panel = null;
                 startScreen = "";
                 targetScreen = "";
@@ -597,26 +643,29 @@
             pointerId = null;
             panel = null;
             if (!activePanel) {
-              cleanupFallbackBackPreview(activePanel, startScreen, true);
+              cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
               startScreen = "";
+              startScrollY = 0;
               targetScreen = "";
               return;
             }
             if (shouldNavigate) {
               applyFallbackSwipeOffset(activePanel, window.innerWidth, true);
               window.setTimeout(function () {
-                cleanupFallbackBackPreview(activePanel, startScreen, false);
+                cleanupFallbackBackPreview(activePanel, startScreen, false, startScrollY);
                 handleFallbackBackNavigation();
               }, 180);
               startScreen = "";
+              startScrollY = 0;
               targetScreen = "";
               return;
             }
             applyFallbackSwipeOffset(activePanel, 0, true);
             window.setTimeout(function () {
-              cleanupFallbackBackPreview(activePanel, startScreen, true);
+              cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
             }, 220);
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
           });
 
@@ -629,15 +678,16 @@
             if (activePanel) {
               applyFallbackSwipeOffset(activePanel, 0, true);
               window.setTimeout(function () {
-                cleanupFallbackBackPreview(activePanel, startScreen, true);
+                cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
               }, 220);
             } else {
-              cleanupFallbackBackPreview(activePanel, startScreen, true);
+              cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
             }
             tracking = false;
             dragging = false;
             panel = null;
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
             if (captureElement && captureElement.releasePointerCapture) {
               try {
@@ -659,6 +709,7 @@
             dragging = false;
             panel = null;
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
             return;
           }
@@ -666,6 +717,7 @@
           startX = touch.clientX;
           startY = touch.clientY;
           startScreen = currentScreen;
+          startScrollY = getFallbackScrollY();
           targetScreen = getFallbackBackTargetScreen(currentScreen);
           panel = null;
           dragging = false;
@@ -691,9 +743,10 @@
           if (!dragging) {
             if (deltaY > 16 && deltaY > deltaX) {
               tracking = false;
-              cleanupFallbackBackPreview(panel, startScreen, true);
+              cleanupFallbackBackPreview(panel, startScreen, true, startScrollY);
               panel = null;
               startScreen = "";
+              startScrollY = 0;
               targetScreen = "";
               return;
             }
@@ -704,6 +757,7 @@
             if (!panel) {
               tracking = false;
               startScreen = "";
+              startScrollY = 0;
               targetScreen = "";
               return;
             }
@@ -724,9 +778,10 @@
           if (!tracking || !event.changedTouches || event.changedTouches.length !== 1) {
             tracking = false;
             dragging = false;
-            cleanupFallbackBackPreview(panel, startScreen, true);
+            cleanupFallbackBackPreview(panel, startScreen, true, startScrollY);
             panel = null;
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
             return;
           }
@@ -739,26 +794,29 @@
           dragging = false;
           panel = null;
           if (!activePanel) {
-            cleanupFallbackBackPreview(activePanel, startScreen, true);
+            cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
             return;
           }
           if (shouldNavigate) {
             applyFallbackSwipeOffset(activePanel, window.innerWidth, true);
             window.setTimeout(function () {
-              cleanupFallbackBackPreview(activePanel, startScreen, false);
+              cleanupFallbackBackPreview(activePanel, startScreen, false, startScrollY);
               handleFallbackBackNavigation();
             }, 180);
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
             return;
           }
           applyFallbackSwipeOffset(activePanel, 0, true);
           window.setTimeout(function () {
-            cleanupFallbackBackPreview(activePanel, startScreen, true);
+            cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
           }, 220);
           startScreen = "";
+          startScrollY = 0;
           targetScreen = "";
         });
 
@@ -767,20 +825,22 @@
           if (activePanel) {
             applyFallbackSwipeOffset(activePanel, 0, true);
             window.setTimeout(function () {
-              cleanupFallbackBackPreview(activePanel, startScreen, true);
+              cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
             }, 220);
             tracking = false;
             dragging = false;
             panel = null;
             startScreen = "";
+            startScrollY = 0;
             targetScreen = "";
             return;
           }
           tracking = false;
           dragging = false;
           panel = null;
-          cleanupFallbackBackPreview(activePanel, startScreen, true);
+          cleanupFallbackBackPreview(activePanel, startScreen, true, startScrollY);
           startScreen = "";
+          startScrollY = 0;
           targetScreen = "";
         });
       }
@@ -982,6 +1042,12 @@
       applyStableEditorFrame();
       on(byId("jcl-input"), "input", applyStableEditorFrame);
       on(window, "resize", applyStableEditorFrame);
+      on(window, "scroll", rememberFallbackMenuScrollPositionIfVisible);
+      on(window, "pageshow", function () {
+        if ((document.body.getAttribute("data-screen") || "menu") === "menu") {
+          restoreFallbackMenuScrollPosition();
+        }
+      });
       setupFallbackBackSwipeGesture();
       showFallbackScreen("menu");
       syncFallbackHistory("menu", { replace: true });
