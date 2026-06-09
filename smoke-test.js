@@ -1,11 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 
-const projectRoot = fs.existsSync(path.join(__dirname, "app.js"))
-  ? __dirname
-  : path.join(__dirname, "..");
-const appPath = path.join(projectRoot, "app.js");
-const htmlPath = path.join(projectRoot, "index.html");
+const rootDir = __dirname;
+const appPath = fs.existsSync(path.join(rootDir, "app.js"))
+  ? path.join(rootDir, "app.js")
+  : path.join(rootDir, "..", "app.js");
+const htmlPath = fs.existsSync(path.join(rootDir, "index.html"))
+  ? path.join(rootDir, "index.html")
+  : path.join(rootDir, "..", "index.html");
 const source = fs.readFileSync(appPath, "utf8");
 const html = fs.readFileSync(htmlPath, "utf8");
 const start = source.indexOf("const exampleJcls");

@@ -4,7 +4,7 @@ App estática para pegar un JCL de z/OS y obtener una explicación línea por l�
 
 ## Cómo usarla
 
-Abre `index.html` en el navegador, pega un JCL y pulsa **Explicar JCL**.
+Abre `index.html` en el navegador, pega un JCL y elige **Resumen simplificado** o **Analizar línea por línea**.
 
 La app funciona sin servidor y sin dependencias externas. El análisis es local y basado en reglas, por lo que conviene usarlo como ayuda de lectura y no como validador formal de sintaxis JCL.
 
@@ -22,6 +22,12 @@ La app funciona sin servidor y sin dependencias externas. El análisis es local 
 - Ayuda contextual para `DCB`, incluyendo subparámetros como `RECFM`, `LRECL`, `BLKSIZE`, `DSORG` y `BUFNO`.
 - Ayuda contextual para `SPACE`, incluyendo unidad, espacio primario/secundario, directorio y `RLSE`.
 - Ayuda contextual para `SORT FIELDS` dentro de datos inline, incluyendo posición, longitud, formato y orden.
+
+## Navegación táctil
+
+En las pantallas **Resumen simplificado** y **Analizar línea por línea**, el gesto horizontal de izquierda a derecha vuelve siempre al **menú**. La pantalla de fondo durante el gesto se genera como una copia temporal del menú, por lo que no depende de una pantalla previa guardada por el navegador ni de la caché de navegación.
+
+La versión `v68` agrega cache-busting en `index.html` para `styles.css` y `app.js`, además de metadatos `no-cache` para reducir mezclas entre versiones al probar cambios.
 
 ## Verificación
 
