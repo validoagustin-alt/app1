@@ -1467,6 +1467,8 @@ body.is-back-swipe-active {
 
 .is-back-swipe-underlay {
   backface-visibility: hidden;
+  background-color: rgba(var(--panel-rgb), 0.96);
+  outline: 1px solid transparent;
 }
 
 .back-button {
