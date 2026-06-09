@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-44">
+  <link rel="stylesheet" href="styles.css?v=app-version-65">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -13,7 +13,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v44</div>
+      <div class="app-version" aria-label="Version de la app">v65</div>
     </nav>
 
     <section class="workspace">
@@ -91,7 +91,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=app-version-44"></script>
+    <script src="app.js?v=app-version-65"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -138,6 +138,26 @@
         {
           title: "Endevor batch SCL",
           jcl: "//ENDVOR  JOB (ACCT),'ENDEVOR',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  ADD ELEMENT 'PAYCALC'\n      FROM DSNAME 'DEV.SOURCE.COBOL' .\n/*"
+        },
+        {
+          title: "Endevor generate element",
+          jcl: "//ENDGEN  JOB (ACCT),'ENDEVOR GEN',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'QA'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'ONLINE'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  GENERATE ELEMENT 'PAYMENU'\n      OPTIONS CCID 'GEN100'\n              COMMENT 'GENERATE DESDE BATCH' .\n/*"
+        },
+        {
+          title: "Endevor retrieve element",
+          jcl: "//ENDRET  JOB (ACCT),'ENDEVOR RET',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//OUTFILE  DD DSN=DEV.EXTRACT.PAYROLL(PAYRPT),\n//            DISP=SHR\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'PROD'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'BATCH'\n      TYPE 'COBOL'\n      STAGE NUMBER 2 .\n  RETRIEVE ELEMENT 'PAYRPT'\n      TO DDNAME 'OUTFILE'\n      OPTIONS CCID 'RET200'\n              COMMENT 'RETRIEVE DESDE PRODUCCION' .\n/*"
+        },
+        {
+          title: "Endevor move element",
+          jcl: "//ENDMOV  JOB (ACCT),'ENDEVOR MOVE',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'QA'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'ONLINE'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  MOVE ELEMENT 'PAYEDIT'\n      TO ENVIRONMENT 'QA'\n         SYSTEM 'PAYROLL'\n         SUBSYSTEM 'ONLINE'\n         TYPE 'COBOL'\n         STAGE NUMBER 2\n      OPTIONS CCID 'MOV300'\n              COMMENT 'PROMOCION INTERNA DE STAGE' .\n/*"
+        },
+        {
+          title: "Endevor delete element",
+          jcl: "//ENDDEL  JOB (ACCT),'ENDEVOR DEL',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'BATCH'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  DELETE ELEMENT 'PAYTEST'\n      OPTIONS CCID 'DEL400'\n              COMMENT 'BAJA CONTROLADA DESDE BATCH' .\n/*"
+        },
+        {
+          title: "Endevor update element",
+          jcl: "//ENDUPD  JOB (ACCT),'ENDEVOR UPD',CLASS=A,MSGCLASS=X\n//ENDEVOR EXEC PGM=NDVRC1,PARM='C1BM3000'\n//STEPLIB  DD DSN=ENDEVOR.AUTHLIB,DISP=SHR\n//CONLIB   DD DSN=ENDEVOR.CONLIB,DISP=SHR\n//C1MSGS1  DD SYSOUT=*\n//C1MSGS2  DD SYSOUT=*\n//C1PRINT  DD SYSOUT=*\n//SYSIN    DD *\n  SET FROM ENVIRONMENT 'DEV'\n      SYSTEM 'PAYROLL'\n      SUBSYSTEM 'BATCH'\n      TYPE 'COBOL'\n      STAGE NUMBER 1 .\n  UPDATE ELEMENT 'PAYCALC'\n      FROM DSNAME 'DEV.SOURCE.COBOL(PAYCALC)'\n      OPTIONS CCID 'UPD500'\n              COMMENT 'ACTUALIZACION DESDE DATASET EXTERNO' .\n/*"
         }
       ];
 
@@ -233,6 +253,27 @@
         document.body.setAttribute("data-screen", screenName);
       }
 
+      var suppressScreenHistory = false;
+
+      function syncFallbackHistory(screenName, options) {
+        var state;
+        var currentState;
+        options = options || {};
+        if (!window.history || typeof window.history.pushState !== "function" || suppressScreenHistory) {
+          return;
+        }
+        state = { screen: screenName };
+        currentState = window.history.state || {};
+        if (options.replace || !currentState.screen) {
+          window.history.replaceState(state, "", window.location.href);
+          return;
+        }
+        if (currentState.screen === screenName) {
+          return;
+        }
+        window.history.pushState(state, "", window.location.href);
+      }
+
       function scrollFallbackPanel(panel) {
         if (panel && panel.scrollIntoView) {
           panel.scrollIntoView();
@@ -244,27 +285,43 @@
         }
       }
 
-      function showFallbackSummary() {
+      function showFallbackSummary(options) {
         var panel = byId("summary-panel");
+        options = options || {};
         analyze(false);
         showFallbackScreen("summary");
+        syncFallbackHistory("summary", { replace: options.replaceHistory });
         window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
       }
 
-      function showFallbackExplanation() {
+      function showFallbackExplanation(options) {
         var panel = byId("results-panel");
+        options = options || {};
         analyze(false);
         showFallbackScreen("explanation");
+        syncFallbackHistory("explanation", { replace: options.replaceHistory });
         window.scrollTo(0, 0);
         scrollFallbackPanel(panel);
+      }
+
+      function showFallbackMenu(options) {
+        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        options = options || {};
+        showFallbackScreen("menu");
+        syncFallbackHistory("menu", { replace: options.replaceHistory });
+        scrollFallbackPanel(inputPanel);
       }
 
       function handleFallbackBackNavigation() {
         var currentScreen = document.body.getAttribute("data-screen") || "menu";
-        var inputPanel = document.querySelector ? document.querySelector(".input-panel") : null;
+        var historyState = window.history ? window.history.state : null;
         var resultsPanel = byId("results-panel");
         if (currentScreen === "menu") {
+          return;
+        }
+        if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
+          window.history.back();
           return;
         }
         if (currentScreen === "disp-palette") {
@@ -272,8 +329,7 @@
           scrollFallbackPanel(resultsPanel);
           return;
         }
-        showFallbackScreen("menu");
-        scrollFallbackPanel(inputPanel);
+        showFallbackMenu();
       }
 
       function getFallbackBackTargetScreen(currentScreen) {
@@ -307,6 +363,52 @@
         panel.style.transition = withTransition ? "transform 220ms ease-out, box-shadow 220ms ease-out" : "none";
         panel.style.transform = "translateX(" + Math.max(0, offset) + "px)";
         panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
+      }
+
+      function fitFallbackEditorColumns(input, targetColumns, maxFontSizePx, minFontSizePx) {
+        var computedStyle;
+        var paddingLeft;
+        var paddingRight;
+        var availableWidth;
+        var ruler;
+        var low;
+        var high;
+        var index;
+        var mid;
+        if (!input || !targetColumns) {
+          return;
+        }
+        computedStyle = window.getComputedStyle ? window.getComputedStyle(input) : input.style;
+        paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+        paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+        availableWidth = Math.max(0, input.clientWidth - paddingLeft - paddingRight);
+        if (!availableWidth) {
+          return;
+        }
+        ruler = document.createElement("span");
+        ruler.textContent = new Array(targetColumns + 1).join("0");
+        ruler.style.position = "absolute";
+        ruler.style.visibility = "hidden";
+        ruler.style.whiteSpace = "pre";
+        ruler.style.pointerEvents = "none";
+        ruler.style.fontFamily = computedStyle.fontFamily;
+        ruler.style.fontWeight = computedStyle.fontWeight;
+        ruler.style.letterSpacing = computedStyle.letterSpacing;
+        ruler.style.fontVariantLigatures = "none";
+        document.body.appendChild(ruler);
+        low = minFontSizePx;
+        high = maxFontSizePx;
+        for (index = 0; index < 10; index += 1) {
+          mid = (low + high) / 2;
+          ruler.style.fontSize = mid + "px";
+          if (ruler.getBoundingClientRect().width <= availableWidth) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+        document.body.removeChild(ruler);
+        input.style.fontSize = Math.max(minFontSizePx, Math.min(low, maxFontSizePx)).toFixed(2) + "px";
       }
 
       function resetFallbackSwipePanel(panel) {
@@ -355,6 +457,8 @@
         activePanel.style.margin = "0";
         activePanel.style.zIndex = "30";
         activePanel.style.pointerEvents = "none";
+        activePanel.setAttribute("data-prev-touch-action", activePanel.style.touchAction || "");
+        activePanel.style.touchAction = "none";
         applyFallbackSwipeOffset(activePanel, 0, false);
         return activePanel;
       }
@@ -371,6 +475,8 @@
           activePanel.style.margin = "";
           activePanel.style.zIndex = "";
           activePanel.style.pointerEvents = "";
+          activePanel.style.touchAction = activePanel.getAttribute("data-prev-touch-action") || "";
+          activePanel.removeAttribute("data-prev-touch-action");
         }
         document.body.removeAttribute("data-back-preview");
         if (restoreScreen) {
@@ -386,6 +492,161 @@
         var panel = null;
         var startScreen = "";
         var targetScreen = "";
+        var pointerId = null;
+        var captureElement = null;
+
+        if (window.PointerEvent) {
+          on(document, "pointerdown", function (event) {
+            var currentScreen = document.body.getAttribute("data-screen") || "menu";
+            if (event.pointerType !== "touch" || !event.isPrimary) {
+              return;
+            }
+            if (currentScreen === "menu") {
+              tracking = false;
+              dragging = false;
+              panel = null;
+              startScreen = "";
+              targetScreen = "";
+              pointerId = null;
+              return;
+            }
+            startX = event.clientX;
+            startY = event.clientY;
+            startScreen = currentScreen;
+            targetScreen = getFallbackBackTargetScreen(currentScreen);
+            panel = null;
+            dragging = false;
+            tracking = !!targetScreen && !!getFallbackActivePanel();
+            pointerId = tracking ? event.pointerId : null;
+            captureElement = tracking ? getFallbackActivePanel() : null;
+            if (captureElement && captureElement.setPointerCapture) {
+              try {
+                captureElement.setPointerCapture(event.pointerId);
+              } catch (error) {}
+            }
+          });
+
+          on(document, "pointermove", function (event) {
+            var deltaX;
+            var deltaY;
+            if (!tracking || pointerId !== event.pointerId) {
+              return;
+            }
+            deltaX = event.clientX - startX;
+            deltaY = Math.abs(event.clientY - startY);
+            if (deltaX <= 0) {
+              if (dragging) {
+                applyFallbackSwipeOffset(panel, 0, false);
+              }
+              return;
+            }
+            if (!dragging) {
+              if (deltaY > 16 && deltaY > deltaX) {
+                tracking = false;
+                pointerId = null;
+                captureElement = null;
+                cleanupFallbackBackPreview(panel, startScreen, true);
+                panel = null;
+                startScreen = "";
+                targetScreen = "";
+                return;
+              }
+              if (deltaX < 4 || deltaX * 0.9 < deltaY) {
+                return;
+              }
+              panel = prepareFallbackBackPreview(startScreen, targetScreen);
+              if (!panel) {
+                tracking = false;
+                startScreen = "";
+                targetScreen = "";
+                pointerId = null;
+                captureElement = null;
+                return;
+              }
+              dragging = true;
+            }
+            if (event.preventDefault) {
+              event.preventDefault();
+            }
+            applyFallbackSwipeOffset(panel, Math.min(deltaX, window.innerWidth * 0.94), false);
+          });
+
+          on(document, "pointerup", function (event) {
+            var deltaX;
+            var deltaY;
+            var activePanel;
+            var shouldNavigate;
+            if (!tracking || pointerId !== event.pointerId) {
+              return;
+            }
+            deltaX = event.clientX - startX;
+            deltaY = Math.abs(event.clientY - startY);
+            activePanel = panel;
+            shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+            tracking = false;
+            dragging = false;
+            if (captureElement && captureElement.releasePointerCapture) {
+              try {
+                captureElement.releasePointerCapture(event.pointerId);
+              } catch (error) {}
+            }
+            captureElement = null;
+            pointerId = null;
+            panel = null;
+            if (!activePanel) {
+              cleanupFallbackBackPreview(activePanel, startScreen, true);
+              startScreen = "";
+              targetScreen = "";
+              return;
+            }
+            if (shouldNavigate) {
+              applyFallbackSwipeOffset(activePanel, window.innerWidth, true);
+              window.setTimeout(function () {
+                cleanupFallbackBackPreview(activePanel, startScreen, false);
+                handleFallbackBackNavigation();
+              }, 180);
+              startScreen = "";
+              targetScreen = "";
+              return;
+            }
+            applyFallbackSwipeOffset(activePanel, 0, true);
+            window.setTimeout(function () {
+              cleanupFallbackBackPreview(activePanel, startScreen, true);
+            }, 220);
+            startScreen = "";
+            targetScreen = "";
+          });
+
+          on(document, "pointercancel", function (event) {
+            var activePanel;
+            if (pointerId !== null && pointerId !== event.pointerId) {
+              return;
+            }
+            activePanel = panel;
+            if (activePanel) {
+              applyFallbackSwipeOffset(activePanel, 0, true);
+              window.setTimeout(function () {
+                cleanupFallbackBackPreview(activePanel, startScreen, true);
+              }, 220);
+            } else {
+              cleanupFallbackBackPreview(activePanel, startScreen, true);
+            }
+            tracking = false;
+            dragging = false;
+            panel = null;
+            startScreen = "";
+            targetScreen = "";
+            if (captureElement && captureElement.releasePointerCapture) {
+              try {
+                captureElement.releasePointerCapture(event.pointerId);
+              } catch (error) {}
+            }
+            captureElement = null;
+            pointerId = null;
+          });
+
+          return;
+        }
 
         on(document, "touchstart", function (event) {
           var currentScreen = document.body.getAttribute("data-screen") || "menu";
@@ -405,14 +666,14 @@
           targetScreen = getFallbackBackTargetScreen(currentScreen);
           panel = null;
           dragging = false;
-          tracking = startX <= 96 && !!targetScreen && !!getFallbackActivePanel();
+          tracking = !!targetScreen && !!getFallbackActivePanel();
         });
 
         on(document, "touchmove", function (event) {
           var touch;
           var deltaX;
           var deltaY;
-          if (!tracking || !panel || !event.touches || event.touches.length !== 1) {
+          if (!tracking || !event.touches || event.touches.length !== 1) {
             return;
           }
           touch = event.touches[0];
@@ -427,12 +688,13 @@
           if (!dragging) {
             if (deltaY > 16 && deltaY > deltaX) {
               tracking = false;
+              cleanupFallbackBackPreview(panel, startScreen, true);
               panel = null;
               startScreen = "";
               targetScreen = "";
               return;
             }
-            if (deltaX < 14 || deltaX < deltaY) {
+            if (deltaX < 4 || deltaX * 0.9 < deltaY) {
               return;
             }
             panel = prepareFallbackBackPreview(startScreen, targetScreen);
@@ -649,7 +911,6 @@
         input.style.resize = "none";
         input.style.overflowX = "auto";
         input.style.overflowY = "hidden";
-        input.style.fontSize = "16px";
         input.style.lineHeight = "1.5";
         input.style.webkitTextSizeAdjust = "100%";
         input.style.backgroundColor = "#000";
@@ -659,7 +920,29 @@
         input.style.maxHeight = "none";
         input.style.overflowY = "hidden";
         input.style.height = "auto";
+        fitFallbackEditorColumns(input, 72, 16, 6.5);
         input.style.height = Math.max(minHeight, input.scrollHeight + 2) + "px";
+      }
+
+      function restoreFallbackScreenFromHistory(state) {
+        var targetScreen = state && state.screen ? state.screen : "menu";
+        suppressScreenHistory = true;
+        if (targetScreen === "summary") {
+          showFallbackSummary();
+        } else if (targetScreen === "explanation") {
+          showFallbackExplanation();
+        } else {
+          showFallbackMenu();
+        }
+        suppressScreenHistory = false;
+      }
+
+      function shouldUseNativeAppleBackSwipe() {
+        var ua = navigator.userAgent || "";
+        var platform = navigator.platform || "";
+        var isIOS = /iPhone|iPad|iPod/i.test(ua);
+        var isIPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+        return isIOS || isIPadOS;
       }
 
       populateExamples();
@@ -681,7 +964,7 @@
         if (byId("line-count")) {
           byId("line-count").innerHTML = "0";
         }
-        showFallbackScreen("menu");
+        showFallbackMenu();
       });
       if (document.querySelectorAll) {
         var backButtons = document.querySelectorAll("[data-back-menu]");
@@ -698,6 +981,10 @@
       on(window, "resize", applyStableEditorFrame);
       setupFallbackBackSwipeGesture();
       showFallbackScreen("menu");
+      syncFallbackHistory("menu", { replace: true });
+      on(window, "popstate", function (event) {
+        restoreFallbackScreenFromHistory(event.state || { screen: "menu" });
+      });
     }());
   </script>
 </body>
