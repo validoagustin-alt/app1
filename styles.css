@@ -1802,3 +1802,14 @@ body[data-back-preview="menu"] .workspace {
     font-weight: 500 !important;
   }
 }
+
+/* v73: smoother syntax submenu animation */
+.syntax-help.is-animating .syntax-help-content {
+  pointer-events: none;
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
+.syntax-help-content[data-smooth-animation="true"] {
+  overflow: hidden;
+}

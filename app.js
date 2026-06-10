@@ -1463,69 +1463,97 @@ function toggleSyntaxHelp(details) {
   }
 }
 
-const syntaxHelpAnimationMs = 340;
-const syntaxHelpAnimationEasing = "cubic-bezier(0.22, 1, 0.36, 1)";
+const syntaxHelpAnimationMs = 520;
 
 function openSyntaxHelp(details, content) {
-  details.dataset.animating = "true";
   details.open = true;
   details.classList.add("is-animating", "is-opening");
 
   prepareSyntaxHelpLayer(content);
-  content.style.height = "0px";
-  content.style.opacity = "0";
-  content.style.transform = "translate3d(0, -6px, 0) scaleY(0.985)";
-  content.getBoundingClientRect();
-
-  const targetHeight = content.scrollHeight;
-  content.style.transition = `height ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}, opacity 220ms ease-out, transform ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}`;
-  content.style.height = `${targetHeight}px`;
-  content.style.opacity = "1";
-  content.style.transform = "translate3d(0, 0, 0) scaleY(1)";
-
-  content.addEventListener("transitionend", function handleTransitionEnd(event) {
-    if (event.propertyName !== "height") {
-      return;
-    }
-    content.removeEventListener("transitionend", handleTransitionEnd);
-    finishSyntaxHelpAnimation(details, content);
+  animateSyntaxHelpFrameByFrame(details, content, {
+    fromHeight: 0,
+    toHeight: content.scrollHeight,
+    fromOpacity: 0,
+    toOpacity: 1,
+    fromTranslateY: -8,
+    toTranslateY: 0,
+    onFinish: () => finishSyntaxHelpAnimation(details, content)
   });
 }
 
 function closeSyntaxHelp(details, content) {
-  details.dataset.animating = "true";
   details.classList.add("is-animating", "is-closing");
 
   prepareSyntaxHelpLayer(content);
-  content.style.height = `${content.scrollHeight}px`;
-  content.style.opacity = "1";
-  content.style.transform = "translate3d(0, 0, 0) scaleY(1)";
-  content.getBoundingClientRect();
+  animateSyntaxHelpFrameByFrame(details, content, {
+    fromHeight: content.getBoundingClientRect().height || content.scrollHeight,
+    toHeight: 0,
+    fromOpacity: 1,
+    toOpacity: 0,
+    fromTranslateY: 0,
+    toTranslateY: -8,
+    onFinish: () => {
+      details.open = false;
+      finishSyntaxHelpAnimation(details, content);
+    }
+  });
+}
 
-  content.style.transition = `height ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}, opacity 200ms ease-in, transform ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}`;
-  content.style.height = "0px";
-  content.style.opacity = "0";
-  content.style.transform = "translate3d(0, -6px, 0) scaleY(0.985)";
+function animateSyntaxHelpFrameByFrame(details, content, options) {
+  if (content._syntaxHelpRaf) {
+    cancelAnimationFrame(content._syntaxHelpRaf);
+  }
 
-  content.addEventListener("transitionend", function handleTransitionEnd(event) {
-    if (event.propertyName !== "height") {
+  details.dataset.animating = "true";
+  content.dataset.smoothAnimation = "true";
+
+  const startTime = performance.now();
+  const duration = syntaxHelpAnimationMs;
+  const heightDelta = options.toHeight - options.fromHeight;
+  const opacityDelta = options.toOpacity - options.fromOpacity;
+  const translateDelta = options.toTranslateY - options.fromTranslateY;
+
+  function draw(now) {
+    const elapsed = Math.min(1, (now - startTime) / duration);
+    const eased = easeOutCubic(elapsed);
+    const currentHeight = options.fromHeight + (heightDelta * eased);
+    const currentOpacity = options.fromOpacity + (opacityDelta * eased);
+    const currentTranslateY = options.fromTranslateY + (translateDelta * eased);
+
+    content.style.height = `${Math.max(0, currentHeight).toFixed(2)}px`;
+    content.style.opacity = currentOpacity.toFixed(3);
+    content.style.transform = `translate3d(0, ${currentTranslateY.toFixed(2)}px, 0)`;
+
+    if (elapsed < 1) {
+      content._syntaxHelpRaf = requestAnimationFrame(draw);
       return;
     }
-    content.removeEventListener("transitionend", handleTransitionEnd);
-    details.open = false;
-    finishSyntaxHelpAnimation(details, content);
-  });
+
+    content._syntaxHelpRaf = 0;
+    options.onFinish();
+  }
+
+  content.style.height = `${options.fromHeight}px`;
+  content.style.opacity = `${options.fromOpacity}`;
+  content.style.transform = `translate3d(0, ${options.fromTranslateY}px, 0)`;
+  content._syntaxHelpRaf = requestAnimationFrame(draw);
+}
+
+function easeOutCubic(progress) {
+  return 1 - Math.pow(1 - progress, 3);
 }
 
 function prepareSyntaxHelpLayer(content) {
   content.style.overflow = "hidden";
   content.style.willChange = "height, opacity, transform";
   content.style.backfaceVisibility = "hidden";
+  content.style.transform = "translate3d(0, 0, 0)";
 }
 
 function finishSyntaxHelpAnimation(details, content) {
   details.dataset.animating = "false";
   details.classList.remove("is-animating", "is-opening", "is-closing");
+  content.dataset.smoothAnimation = "false";
   content.style.transition = "";
   content.style.height = "";
   content.style.overflow = "";

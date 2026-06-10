@@ -41,10 +41,10 @@ node smoke-test.js
 ```
 
 
-## Cambios v72
+## Cambios v73
 
-- Versión incrementada a `v72`.
-- Cache-busting actualizado a `app-version-72`.
+- Versión incrementada a `v73`.
+- Cache-busting actualizado a `app-version-73`.
 - Los submenús de sintaxis en la pantalla **Analizar línea por línea** ahora usan animación por `height` medido en vez de `max-height`.
 - Se agregó easing más fluido, `translate3d`, `will-change` temporal y `contain: layout paint` para reducir saltos visuales en móviles.
 
@@ -55,3 +55,11 @@ node smoke-test.js
 - El fondo visible durante el gesto es una copia temporal del menú/pantalla destino, no el panel real.
 - Al completar el gesto, se navega al menú y se restaura `savedMenuScrollY`.
 - Al cancelar el gesto, se elimina la copia temporal y se restaura la pantalla original.
+
+
+## Cambios v73
+
+- Versión incrementada a `v73`.
+- Cache-busting actualizado a `app-version-73`.
+- La expansión de submenús de sintaxis ahora usa animación frame-by-frame con `requestAnimationFrame`, medición de altura y `translate3d` para una sensación más cercana a 60 fps.
+- Se aumentó la duración de la transición para reducir la percepción de saltos entre cuadros en móviles.

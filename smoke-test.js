@@ -27,20 +27,24 @@ if (!source.includes("restoreMenuScrollPosition") || !source.includes("savedMenu
   throw new Error("La app debe conservar y restaurar el scroll del menu");
 }
 
-if (!html.includes("app-version-72") || !html.includes(">v72<")) {
-  throw new Error("La version visible y cache-busting deben estar en v72");
+if (!html.includes("app-version-73") || !html.includes(">v73<")) {
+  throw new Error("La version visible y cache-busting deben estar en v73");
 }
 
 if (!source.includes("function toggleSyntaxHelp") || !source.includes("function openSyntaxHelp") || !source.includes("function closeSyntaxHelp")) {
   throw new Error("Los submenus de sintaxis deben usar apertura/cierre animado");
 }
 
-if (!source.includes("summary.addEventListener") || !source.includes("event.preventDefault()") || !source.includes("syntaxHelpAnimationMs = 340")) {
+if (!source.includes("summary.addEventListener") || !source.includes("event.preventDefault()") || !source.includes("syntaxHelpAnimationMs = 520")) {
   throw new Error("La expansion de sintaxis debe interceptar el summary y usar una animacion dedicada");
 }
 
-if (!source.includes("height ${syntaxHelpAnimationMs}ms") || !source.includes("translate3d") || !source.includes("willChange")) {
-  throw new Error("La animacion de sintaxis debe usar height medido, compositing y easing fluido");
+if (!source.includes("requestAnimationFrame") || !source.includes("function animateSyntaxHelpFrameByFrame") || !source.includes("function easeOutCubic")) {
+  throw new Error("La animacion de sintaxis debe usar requestAnimationFrame para mejorar la fluidez percibida");
+}
+
+if (!source.includes("translate3d") || !source.includes("willChange") || !source.includes("toFixed(2)")) {
+  throw new Error("La animacion de sintaxis debe usar compositing y actualizacion frame-by-frame estable");
 }
 
 while ((scriptMatch = scriptPattern.exec(html))) {
