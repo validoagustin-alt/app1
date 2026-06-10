@@ -1382,6 +1382,10 @@ function renderHelpItem(helpItem) {
 
   const summary = document.createElement("summary");
   summary.textContent = helpItem.buttonLabel;
+  summary.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleSyntaxHelp(details);
+  });
   details.appendChild(summary);
 
   const content = document.createElement("div");
@@ -1438,6 +1442,77 @@ function renderHelpItem(helpItem) {
 
   wrapper.append(details, paletteButton);
   return wrapper;
+}
+
+function toggleSyntaxHelp(details) {
+  const content = details.querySelector(".syntax-help-content");
+
+  if (!content || details.dataset.animating === "true") {
+    return;
+  }
+
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    details.open = !details.open;
+    return;
+  }
+
+  if (details.open) {
+    closeSyntaxHelp(details, content);
+  } else {
+    openSyntaxHelp(details, content);
+  }
+}
+
+function openSyntaxHelp(details, content) {
+  details.dataset.animating = "true";
+  details.open = true;
+  details.classList.add("is-animating", "is-opening");
+  content.style.overflow = "hidden";
+  content.style.maxHeight = "0px";
+  content.style.opacity = "0";
+  content.style.transform = "translateY(-4px)";
+
+  requestAnimationFrame(() => {
+    content.style.transition = "max-height 240ms ease, opacity 180ms ease, transform 240ms ease";
+    content.style.maxHeight = `${content.scrollHeight}px`;
+    content.style.opacity = "1";
+    content.style.transform = "translateY(0)";
+  });
+
+  window.setTimeout(() => {
+    finishSyntaxHelpAnimation(details, content);
+  }, 270);
+}
+
+function closeSyntaxHelp(details, content) {
+  details.dataset.animating = "true";
+  details.classList.add("is-animating", "is-closing");
+  content.style.overflow = "hidden";
+  content.style.maxHeight = `${content.scrollHeight}px`;
+  content.style.opacity = "1";
+  content.style.transform = "translateY(0)";
+
+  requestAnimationFrame(() => {
+    content.style.transition = "max-height 220ms ease, opacity 160ms ease, transform 220ms ease";
+    content.style.maxHeight = "0px";
+    content.style.opacity = "0";
+    content.style.transform = "translateY(-4px)";
+  });
+
+  window.setTimeout(() => {
+    details.open = false;
+    finishSyntaxHelpAnimation(details, content);
+  }, 250);
+}
+
+function finishSyntaxHelpAnimation(details, content) {
+  details.dataset.animating = "false";
+  details.classList.remove("is-animating", "is-opening", "is-closing");
+  content.style.transition = "";
+  content.style.maxHeight = "";
+  content.style.overflow = "";
+  content.style.opacity = "";
+  content.style.transform = "";
 }
 
 function renderSummary(analysis) {

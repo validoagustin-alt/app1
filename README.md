@@ -22,6 +22,7 @@ La app funciona sin servidor y sin dependencias externas. El análisis es local 
 - Ayuda contextual para `DCB`, incluyendo subparámetros como `RECFM`, `LRECL`, `BLKSIZE`, `DSORG` y `BUFNO`.
 - Ayuda contextual para `SPACE`, incluyendo unidad, espacio primario/secundario, directorio y `RLSE`.
 - Ayuda contextual para `SORT FIELDS` dentro de datos inline, incluyendo posición, longitud, formato y orden.
+- Los submenús de sintaxis en “Analizar línea por línea” se abren y cierran con expansión suave.
 
 ## Navegación táctil
 
@@ -39,6 +40,12 @@ node --check app.js
 node smoke-test.js
 ```
 
+
+## Cambios v71
+
+- Versión incrementada a `v71`.
+- Cache-busting actualizado a `app-version-71`.
+- Los submenús de sintaxis en la pantalla **Analizar línea por línea** se expanden y se contraen suavemente al hacer clic.
 
 ## Corrección v70
 

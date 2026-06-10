@@ -728,7 +728,8 @@ button:hover {
   width: fit-content;
 }
 
-.syntax-help[open] {
+.syntax-help[open],
+.syntax-help.is-animating {
   width: 100%;
 }
 
@@ -756,6 +757,7 @@ button:hover {
 
 .syntax-help-content {
   margin-top: 10px;
+  transform-origin: top center;
   padding: 14px;
   border: 1px solid var(--help-line);
   border-radius: 16px;

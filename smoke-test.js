@@ -27,6 +27,18 @@ if (!source.includes("restoreMenuScrollPosition") || !source.includes("savedMenu
   throw new Error("La app debe conservar y restaurar el scroll del menu");
 }
 
+if (!html.includes("app-version-71") || !html.includes(">v71<")) {
+  throw new Error("La version visible y cache-busting deben estar en v71");
+}
+
+if (!source.includes("function toggleSyntaxHelp") || !source.includes("function openSyntaxHelp") || !source.includes("function closeSyntaxHelp")) {
+  throw new Error("Los submenus de sintaxis deben usar apertura/cierre animado");
+}
+
+if (!source.includes("summary.addEventListener") || !source.includes("event.preventDefault()") || !source.includes("max-height 240ms ease")) {
+  throw new Error("La expansion suave de sintaxis debe interceptar el summary y animar max-height");
+}
+
 while ((scriptMatch = scriptPattern.exec(html))) {
   if (scriptMatch[1].trim()) {
     inlineScripts.push(scriptMatch[1]);
