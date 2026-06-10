@@ -29,7 +29,9 @@ let backSwipeStartScrollY = 0;
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
 let backSwipeCaptureElement = null;
+let backSwipePreviewClone = null;
 let suppressScreenHistory = false;
+const backSwipeEdgeWidthPx = 36;
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -2146,15 +2148,60 @@ function shouldCompleteBackSwipe(deltaX, deltaY) {
   return deltaX > 0 && deltaY <= 120;
 }
 
+function isBackSwipeFromLeftEdge(startX) {
+  return startX >= 0 && startX <= backSwipeEdgeWidthPx;
+}
+
+function createBackSwipePreviewClone(targetScreen, activeRect) {
+  const targetPanel = getPanelForScreen(targetScreen);
+
+  if (!targetPanel || !activeRect) {
+    return null;
+  }
+
+  const clone = targetPanel.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.setAttribute("aria-hidden", "true");
+  clone.classList.add("back-swipe-preview-clone");
+  clone.hidden = false;
+  clone.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+  clone.querySelectorAll("button, input, textarea, select, a").forEach((node) => {
+    node.setAttribute("tabindex", "-1");
+    node.setAttribute("aria-hidden", "true");
+  });
+
+  clone.style.position = "fixed";
+  clone.style.left = `${activeRect.left}px`;
+  clone.style.top = `${activeRect.top}px`;
+  clone.style.width = `${activeRect.width}px`;
+  clone.style.maxWidth = `${activeRect.width}px`;
+  clone.style.maxHeight = `calc(100vh - ${Math.max(0, activeRect.top)}px - 12px)`;
+  clone.style.margin = "0";
+  clone.style.zIndex = "20";
+  clone.style.pointerEvents = "none";
+  clone.style.overflow = "hidden";
+
+  document.body.appendChild(clone);
+  return clone;
+}
+
+function removeBackSwipePreviewClone() {
+  if (backSwipePreviewClone && backSwipePreviewClone.parentNode) {
+    backSwipePreviewClone.parentNode.removeChild(backSwipePreviewClone);
+  }
+  backSwipePreviewClone = null;
+}
+
 function prepareBackSwipePreview(currentScreen, targetScreen) {
   const activePanel = getPanelForScreen(currentScreen);
-  const targetPanel = getPanelForScreen(targetScreen);
 
   if (!activePanel || !targetScreen) {
     return null;
   }
 
   const rect = activePanel.getBoundingClientRect();
+  backSwipePreviewClone = createBackSwipePreviewClone(targetScreen, rect);
+
   activePanel.style.position = "fixed";
   activePanel.style.left = `${rect.left}px`;
   activePanel.style.top = `${rect.top}px`;
@@ -2167,16 +2214,7 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   activePanel.dataset.prevTouchAction = activePanel.style.touchAction || "";
   activePanel.style.touchAction = "none";
 
-  if (targetPanel) {
-    targetPanel.hidden = false;
-  }
-
   document.body.dataset.backPreview = targetScreen;
-
-  if (targetScreen === "menu") {
-    scrollWindowToY(savedMenuScrollY, "auto");
-  }
-
   applySwipePanelOffset(activePanel, 0, false);
   return activePanel;
 }
@@ -2200,6 +2238,7 @@ function cleanupBackSwipePreview(restoreScreen = true) {
     delete activePanel.dataset.prevTouchAction;
   }
 
+  removeBackSwipePreviewClone();
   delete document.body.dataset.backPreview;
 
   if (restoreScreen) {
@@ -2245,6 +2284,14 @@ function setupBackSwipeGesture() {
   if (window.PointerEvent) {
     document.addEventListener("pointerdown", (event) => {
       if (event.pointerType !== "touch" || !event.isPrimary) {
+        return;
+      }
+
+      if (!isBackSwipeFromLeftEdge(event.clientX)) {
+        backSwipeTracking = false;
+        backSwipeDragging = false;
+        backSwipePanel = null;
+        backSwipePointerId = null;
         return;
       }
 
@@ -2407,6 +2454,13 @@ function setupBackSwipeGesture() {
     }
 
     const touch = event.touches[0];
+    if (!isBackSwipeFromLeftEdge(touch.clientX)) {
+      backSwipeTracking = false;
+      backSwipeDragging = false;
+      backSwipePanel = null;
+      return;
+    }
+
     backSwipeStartX = touch.clientX;
     backSwipeStartY = touch.clientY;
     backSwipeStartScreen = currentScreen;

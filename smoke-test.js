@@ -15,6 +15,18 @@ if (start === -1 || end === -1 || end <= start) {
   throw new Error("No se pudo aislar el analizador en app.js");
 }
 
+if (!source.includes("const backSwipeEdgeWidthPx = 36") || !source.includes("function isBackSwipeFromLeftEdge")) {
+  throw new Error("El gesto back debe iniciar solo desde el borde izquierdo");
+}
+
+if (!source.includes("createBackSwipePreviewClone") || !source.includes("back-swipe-preview-clone") || !source.includes("removeBackSwipePreviewClone")) {
+  throw new Error("El preview del menu debe usar una copia temporal, no el panel real");
+}
+
+if (!source.includes("restoreMenuScrollPosition") || !source.includes("savedMenuScrollY")) {
+  throw new Error("La app debe conservar y restaurar el scroll del menu");
+}
+
 while ((scriptMatch = scriptPattern.exec(html))) {
   if (scriptMatch[1].trim()) {
     inlineScripts.push(scriptMatch[1]);

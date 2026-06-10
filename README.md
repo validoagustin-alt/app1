@@ -38,3 +38,12 @@ Si tienes Node.js disponible:
 node --check app.js
 node smoke-test.js
 ```
+
+
+## Corrección v70
+
+- El gesto de regreso se activa únicamente desde los primeros 36 px del borde izquierdo.
+- Durante el arrastre, la pantalla activa se fija y se desplaza horizontalmente con el dedo.
+- El fondo visible durante el gesto es una copia temporal del menú/pantalla destino, no el panel real.
+- Al completar el gesto, se navega al menú y se restaura `savedMenuScrollY`.
+- Al cancelar el gesto, se elimina la copia temporal y se restaura la pantalla original.
