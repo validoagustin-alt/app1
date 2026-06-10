@@ -758,12 +758,14 @@ button:hover {
 .syntax-help-content {
   margin-top: 10px;
   transform-origin: top center;
+  contain: layout paint;
   padding: 14px;
   border: 1px solid var(--help-line);
   border-radius: 16px;
   background: var(--help-bg);
   color: var(--ink);
   line-height: 1.5;
+  transform: translate3d(0, 0, 0);
 }
 
 .syntax-help-content p {

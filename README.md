@@ -41,11 +41,12 @@ node smoke-test.js
 ```
 
 
-## Cambios v71
+## Cambios v72
 
-- Versión incrementada a `v71`.
-- Cache-busting actualizado a `app-version-71`.
-- Los submenús de sintaxis en la pantalla **Analizar línea por línea** se expanden y se contraen suavemente al hacer clic.
+- Versión incrementada a `v72`.
+- Cache-busting actualizado a `app-version-72`.
+- Los submenús de sintaxis en la pantalla **Analizar línea por línea** ahora usan animación por `height` medido en vez de `max-height`.
+- Se agregó easing más fluido, `translate3d`, `will-change` temporal y `contain: layout paint` para reducir saltos visuales en móviles.
 
 ## Corrección v70
 

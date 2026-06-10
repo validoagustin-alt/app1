@@ -1463,56 +1463,76 @@ function toggleSyntaxHelp(details) {
   }
 }
 
+const syntaxHelpAnimationMs = 340;
+const syntaxHelpAnimationEasing = "cubic-bezier(0.22, 1, 0.36, 1)";
+
 function openSyntaxHelp(details, content) {
   details.dataset.animating = "true";
   details.open = true;
   details.classList.add("is-animating", "is-opening");
-  content.style.overflow = "hidden";
-  content.style.maxHeight = "0px";
+
+  prepareSyntaxHelpLayer(content);
+  content.style.height = "0px";
   content.style.opacity = "0";
-  content.style.transform = "translateY(-4px)";
+  content.style.transform = "translate3d(0, -6px, 0) scaleY(0.985)";
+  content.getBoundingClientRect();
 
-  requestAnimationFrame(() => {
-    content.style.transition = "max-height 240ms ease, opacity 180ms ease, transform 240ms ease";
-    content.style.maxHeight = `${content.scrollHeight}px`;
-    content.style.opacity = "1";
-    content.style.transform = "translateY(0)";
-  });
+  const targetHeight = content.scrollHeight;
+  content.style.transition = `height ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}, opacity 220ms ease-out, transform ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}`;
+  content.style.height = `${targetHeight}px`;
+  content.style.opacity = "1";
+  content.style.transform = "translate3d(0, 0, 0) scaleY(1)";
 
-  window.setTimeout(() => {
+  content.addEventListener("transitionend", function handleTransitionEnd(event) {
+    if (event.propertyName !== "height") {
+      return;
+    }
+    content.removeEventListener("transitionend", handleTransitionEnd);
     finishSyntaxHelpAnimation(details, content);
-  }, 270);
+  });
 }
 
 function closeSyntaxHelp(details, content) {
   details.dataset.animating = "true";
   details.classList.add("is-animating", "is-closing");
-  content.style.overflow = "hidden";
-  content.style.maxHeight = `${content.scrollHeight}px`;
+
+  prepareSyntaxHelpLayer(content);
+  content.style.height = `${content.scrollHeight}px`;
   content.style.opacity = "1";
-  content.style.transform = "translateY(0)";
+  content.style.transform = "translate3d(0, 0, 0) scaleY(1)";
+  content.getBoundingClientRect();
 
-  requestAnimationFrame(() => {
-    content.style.transition = "max-height 220ms ease, opacity 160ms ease, transform 220ms ease";
-    content.style.maxHeight = "0px";
-    content.style.opacity = "0";
-    content.style.transform = "translateY(-4px)";
-  });
+  content.style.transition = `height ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}, opacity 200ms ease-in, transform ${syntaxHelpAnimationMs}ms ${syntaxHelpAnimationEasing}`;
+  content.style.height = "0px";
+  content.style.opacity = "0";
+  content.style.transform = "translate3d(0, -6px, 0) scaleY(0.985)";
 
-  window.setTimeout(() => {
+  content.addEventListener("transitionend", function handleTransitionEnd(event) {
+    if (event.propertyName !== "height") {
+      return;
+    }
+    content.removeEventListener("transitionend", handleTransitionEnd);
     details.open = false;
     finishSyntaxHelpAnimation(details, content);
-  }, 250);
+  });
+}
+
+function prepareSyntaxHelpLayer(content) {
+  content.style.overflow = "hidden";
+  content.style.willChange = "height, opacity, transform";
+  content.style.backfaceVisibility = "hidden";
 }
 
 function finishSyntaxHelpAnimation(details, content) {
   details.dataset.animating = "false";
   details.classList.remove("is-animating", "is-opening", "is-closing");
   content.style.transition = "";
-  content.style.maxHeight = "";
+  content.style.height = "";
   content.style.overflow = "";
   content.style.opacity = "";
   content.style.transform = "";
+  content.style.willChange = "";
+  content.style.backfaceVisibility = "";
 }
 
 function renderSummary(analysis) {
