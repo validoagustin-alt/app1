@@ -18,17 +18,20 @@ const lineCount = document.querySelector("#line-count");
 const actionCategoryButtons = document.querySelectorAll(".category-actions [data-category]");
 let previousScreen = "explanation";
 let selectedCategory = "";
+let savedMenuScrollY = 0;
 let backSwipeStartX = 0;
 let backSwipeStartY = 0;
 let backSwipeTracking = false;
 let backSwipeDragging = false;
 let backSwipePanel = null;
 let backSwipeStartScreen = "";
+let backSwipeStartScrollY = 0;
 let backSwipeTargetScreen = "";
 let backSwipePointerId = null;
 let backSwipeCaptureElement = null;
-let backSwipeLastOffset = 0;
+let backSwipePreviewClone = null;
 let suppressScreenHistory = false;
+const backSwipeEdgeWidthPx = 36;
 const defaultSyntaxButtonColor = "#fb923c";
 const defaultSyntaxButtonInk = "#1f0c00";
 
@@ -1841,6 +1844,50 @@ function selectDispButtonStyle(button) {
   showPreviousScreen();
 }
 
+
+function getWindowScrollY() {
+  return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+}
+
+function scrollWindowToY(targetY, behavior = "auto") {
+  const top = Math.max(0, Number(targetY) || 0);
+
+  try {
+    window.scrollTo({ top, left: 0, behavior });
+  } catch (error) {
+    window.scrollTo(0, top);
+  }
+}
+
+function scrollWindowToYAfterLayout(targetY, behavior = "auto") {
+  const top = Math.max(0, Number(targetY) || 0);
+  const restore = () => scrollWindowToY(top, behavior);
+
+  if (typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(restore);
+    });
+    return;
+  }
+
+  window.setTimeout(restore, 0);
+}
+
+function rememberMenuScrollPosition() {
+  savedMenuScrollY = getWindowScrollY();
+}
+
+function rememberMenuScrollPositionIfVisible() {
+  const currentScreen = document.body.dataset.screen || "menu";
+  if (currentScreen === "menu" && !document.body.dataset.backPreview) {
+    rememberMenuScrollPosition();
+  }
+}
+
+function restoreMenuScrollPosition(behavior = "auto") {
+  scrollWindowToYAfterLayout(savedMenuScrollY, behavior);
+}
+
 function scrollToSummary() {
   try {
     summaryPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1913,16 +1960,18 @@ function syncScreenHistory(screenName, options = {}) {
 function showMenu(options = {}) {
   setVisibleScreen("menu");
   syncScreenHistory("menu", { replace: options.replaceHistory });
-  try {
-    inputPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-  } catch (error) {
-    inputPanel.scrollIntoView();
+  applyEditorFrame();
+
+  if (options.restoreScroll === false) {
+    scrollToPanel(inputPanel);
+    return;
   }
 
-  applyEditorFrame();
+  restoreMenuScrollPosition(options.scrollBehavior || "auto");
 }
 
 function showSummaryScreen(options = {}) {
+  rememberMenuScrollPositionIfVisible();
   const analysis = analyzeJcl(input.value);
   updateLineCount(analysis.length);
   renderSummary(analysis);
@@ -1933,6 +1982,7 @@ function showSummaryScreen(options = {}) {
 }
 
 function showExplanationScreen(options = {}) {
+  rememberMenuScrollPositionIfVisible();
   const analysis = analyzeJcl(input.value);
   renderAnalysis(analysis);
   setVisibleScreen("explanation");
@@ -1964,14 +2014,8 @@ function showPreviousScreen(options = {}) {
 function handleBackNavigation() {
   const currentScreen = document.body.dataset.screen || "menu";
   const targetScreen = getBackNavigationTargetScreen(currentScreen);
-  const historyState = window.history ? window.history.state : null;
 
   if (!targetScreen || currentScreen === "menu") {
-    return;
-  }
-
-  if (historyState && historyState.screen === currentScreen && window.history.length > 1) {
-    window.history.back();
     return;
   }
 
@@ -2083,11 +2127,6 @@ function applySwipePanelOffset(panel, offset, withTransition = false) {
   panel.style.boxShadow = offset > 0 ? "-18px 0 42px rgba(0, 0, 0, 0.18)" : "";
 }
 
-function shouldCompleteBackSwipe(deltaX, deltaY) {
-  const offset = Math.max(deltaX, backSwipeLastOffset);
-  return backSwipeDragging && offset >= Math.max(52, window.innerWidth * 0.14) && deltaY <= 110;
-}
-
 function resetSwipePanel(panel) {
   if (!panel) {
     return;
@@ -2098,21 +2137,71 @@ function resetSwipePanel(panel) {
   panel.style.boxShadow = "";
 }
 
+function shouldCompleteBackSwipe(deltaX, deltaY) {
+  if (!backSwipeDragging) {
+    return false;
+  }
+
+  // Una vez que el usuario ya arrastro horizontalmente la pantalla,
+  // el gesto debe completar el regreso al menu al soltar el dedo.
+  // El umbral vertical evita que un scroll vertical accidental dispare el back.
+  return deltaX > 0 && deltaY <= 120;
+}
+
+function isBackSwipeFromLeftEdge(startX) {
+  return startX >= 0 && startX <= backSwipeEdgeWidthPx;
+}
+
+function createBackSwipePreviewClone(targetScreen, activeRect) {
+  const targetPanel = getPanelForScreen(targetScreen);
+
+  if (!targetPanel || !activeRect) {
+    return null;
+  }
+
+  const clone = targetPanel.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.setAttribute("aria-hidden", "true");
+  clone.classList.add("back-swipe-preview-clone");
+  clone.hidden = false;
+  clone.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+  clone.querySelectorAll("button, input, textarea, select, a").forEach((node) => {
+    node.setAttribute("tabindex", "-1");
+    node.setAttribute("aria-hidden", "true");
+  });
+
+  clone.style.position = "fixed";
+  clone.style.left = `${activeRect.left}px`;
+  clone.style.top = `${activeRect.top}px`;
+  clone.style.width = `${activeRect.width}px`;
+  clone.style.maxWidth = `${activeRect.width}px`;
+  clone.style.maxHeight = `calc(100vh - ${Math.max(0, activeRect.top)}px - 12px)`;
+  clone.style.margin = "0";
+  clone.style.zIndex = "20";
+  clone.style.pointerEvents = "none";
+  clone.style.overflow = "hidden";
+
+  document.body.appendChild(clone);
+  return clone;
+}
+
+function removeBackSwipePreviewClone() {
+  if (backSwipePreviewClone && backSwipePreviewClone.parentNode) {
+    backSwipePreviewClone.parentNode.removeChild(backSwipePreviewClone);
+  }
+  backSwipePreviewClone = null;
+}
+
 function prepareBackSwipePreview(currentScreen, targetScreen) {
   const activePanel = getPanelForScreen(currentScreen);
-  const targetPanel = getPanelForScreen(targetScreen);
 
   if (!activePanel || !targetScreen) {
     return null;
   }
 
-  if (targetPanel) {
-    targetPanel.hidden = false;
-  }
-
-  document.body.dataset.backPreview = targetScreen;
-
   const rect = activePanel.getBoundingClientRect();
+  backSwipePreviewClone = createBackSwipePreviewClone(targetScreen, rect);
+
   activePanel.style.position = "fixed";
   activePanel.style.left = `${rect.left}px`;
   activePanel.style.top = `${rect.top}px`;
@@ -2125,6 +2214,7 @@ function prepareBackSwipePreview(currentScreen, targetScreen) {
   activePanel.dataset.prevTouchAction = activePanel.style.touchAction || "";
   activePanel.style.touchAction = "none";
 
+  document.body.dataset.backPreview = targetScreen;
   applySwipePanelOffset(activePanel, 0, false);
   return activePanel;
 }
@@ -2148,16 +2238,18 @@ function cleanupBackSwipePreview(restoreScreen = true) {
     delete activePanel.dataset.prevTouchAction;
   }
 
+  removeBackSwipePreviewClone();
   delete document.body.dataset.backPreview;
 
   if (restoreScreen) {
     setVisibleScreen(startScreen);
+    scrollWindowToY(backSwipeStartScrollY, "auto");
   }
 
   backSwipePanel = null;
   backSwipeStartScreen = "";
+  backSwipeStartScrollY = 0;
   backSwipeTargetScreen = "";
-  backSwipeLastOffset = 0;
 }
 
 function getPanelForScreen(screenName) {
@@ -2195,6 +2287,14 @@ function setupBackSwipeGesture() {
         return;
       }
 
+      if (!isBackSwipeFromLeftEdge(event.clientX)) {
+        backSwipeTracking = false;
+        backSwipeDragging = false;
+        backSwipePanel = null;
+        backSwipePointerId = null;
+        return;
+      }
+
       const currentScreen = document.body.dataset.screen || "menu";
       if (currentScreen === "menu") {
         backSwipeTracking = false;
@@ -2207,10 +2307,10 @@ function setupBackSwipeGesture() {
       backSwipeStartX = event.clientX;
       backSwipeStartY = event.clientY;
       backSwipeStartScreen = currentScreen;
+      backSwipeStartScrollY = getWindowScrollY();
       backSwipeTargetScreen = getBackNavigationTargetScreen(currentScreen);
       backSwipePanel = null;
       backSwipeDragging = false;
-      backSwipeLastOffset = 0;
       backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
       backSwipePointerId = backSwipeTracking ? event.pointerId : null;
       backSwipeCaptureElement = backSwipeTracking ? getActiveScreenPanel() : null;
@@ -2235,7 +2335,6 @@ function setupBackSwipeGesture() {
         if (backSwipeDragging) {
           applySwipePanelOffset(backSwipePanel, 0, false);
         }
-        backSwipeLastOffset = 0;
         return;
       }
 
@@ -2267,8 +2366,7 @@ function setupBackSwipeGesture() {
       }
 
       event.preventDefault();
-      backSwipeLastOffset = Math.min(deltaX, window.innerWidth * 0.94);
-      applySwipePanelOffset(backSwipePanel, backSwipeLastOffset, false);
+      applySwipePanelOffset(backSwipePanel, Math.min(deltaX, window.innerWidth * 0.94), false);
     }, { passive: false });
 
     document.addEventListener("pointerup", (event) => {
@@ -2317,14 +2415,10 @@ function setupBackSwipeGesture() {
 
       const activePanel = backSwipePanel;
       if (activePanel) {
-        const shouldNavigate = backSwipeDragging && backSwipeLastOffset >= Math.max(52, window.innerWidth * 0.14);
-        applySwipePanelOffset(activePanel, shouldNavigate ? window.innerWidth : 0, true);
+        applySwipePanelOffset(activePanel, 0, true);
         window.setTimeout(() => {
-          cleanupBackSwipePreview(!shouldNavigate);
-          if (shouldNavigate) {
-            handleBackNavigation();
-          }
-        }, shouldNavigate ? 180 : 220);
+          cleanupBackSwipePreview(true);
+        }, 220);
       } else {
         cleanupBackSwipePreview(true);
       }
@@ -2360,13 +2454,20 @@ function setupBackSwipeGesture() {
     }
 
     const touch = event.touches[0];
+    if (!isBackSwipeFromLeftEdge(touch.clientX)) {
+      backSwipeTracking = false;
+      backSwipeDragging = false;
+      backSwipePanel = null;
+      return;
+    }
+
     backSwipeStartX = touch.clientX;
     backSwipeStartY = touch.clientY;
     backSwipeStartScreen = currentScreen;
+    backSwipeStartScrollY = getWindowScrollY();
     backSwipeTargetScreen = getBackNavigationTargetScreen(currentScreen);
     backSwipePanel = null;
     backSwipeDragging = false;
-    backSwipeLastOffset = 0;
       backSwipeTracking = Boolean(backSwipeTargetScreen) && Boolean(getActiveScreenPanel());
 
   }, { passive: false });
@@ -2384,7 +2485,6 @@ function setupBackSwipeGesture() {
       if (backSwipeDragging) {
         applySwipePanelOffset(backSwipePanel, 0, false);
       }
-      backSwipeLastOffset = 0;
       return;
     }
 
@@ -2412,8 +2512,7 @@ function setupBackSwipeGesture() {
     }
 
     event.preventDefault();
-    backSwipeLastOffset = Math.min(deltaX, window.innerWidth * 0.94);
-    applySwipePanelOffset(backSwipePanel, backSwipeLastOffset, false);
+    applySwipePanelOffset(backSwipePanel, Math.min(deltaX, window.innerWidth * 0.94), false);
   }, { passive: false });
 
   document.addEventListener("touchend", (event) => {
@@ -2455,14 +2554,10 @@ function setupBackSwipeGesture() {
   document.addEventListener("touchcancel", () => {
     const activePanel = backSwipePanel;
     if (activePanel) {
-      const shouldNavigate = backSwipeDragging && backSwipeLastOffset >= Math.max(52, window.innerWidth * 0.14);
-      applySwipePanelOffset(activePanel, shouldNavigate ? window.innerWidth : 0, true);
+      applySwipePanelOffset(activePanel, 0, true);
       window.setTimeout(() => {
-        cleanupBackSwipePreview(!shouldNavigate);
-        if (shouldNavigate) {
-          handleBackNavigation();
-        }
-      }, shouldNavigate ? 180 : 220);
+        cleanupBackSwipePreview(true);
+      }, 220);
       backSwipeTracking = false;
       backSwipeDragging = false;
       return;
@@ -2632,6 +2727,23 @@ window.addEventListener("resize", applyEditorFrame);
 window.addEventListener("popstate", (event) => {
   restoreScreenFromHistory(event.state || { screen: "menu" });
 });
+
+window.addEventListener("scroll", rememberMenuScrollPositionIfVisible, { passive: true });
+window.addEventListener("pagehide", () => {
+  rememberMenuScrollPositionIfVisible();
+  if (backSwipeTracking || backSwipeDragging || backSwipePanel) {
+    cleanupBackSwipePreview(true);
+  }
+});
+window.addEventListener("pageshow", () => {
+  if (backSwipeTracking || backSwipeDragging || backSwipePanel) {
+    cleanupBackSwipePreview(true);
+  }
+  if ((document.body.dataset.screen || "menu") === "menu") {
+    restoreMenuScrollPosition("auto");
+  }
+});
+
 setupBackSwipeGesture();
 
 window.__JCL_APP_READY = true;

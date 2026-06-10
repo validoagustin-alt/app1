@@ -10,7 +10,7 @@ La app funciona sin servidor y sin dependencias externas. El análisis es local 
 
 ## Qué reconoce
 
-- Selector con 10 ejemplos de JCL: SORT, copia de miembros PDS, copia secuencial, borrado de dataset, creación VSAM KSDS, renombrado de dataset, creación de PDS, GDG, TWS/OPC y Endevor batch.
+- Selector con 15 ejemplos de JCL: SORT, copia de miembros PDS, copia secuencial, borrado de dataset, creación VSAM KSDS, renombrado de dataset, creación de PDS, GDG, TWS/OPC y Endevor batch.
 - Sentencias `JOB`, `EXEC`, `DD`, `PROC`, `PEND`, `SET`, `IF`, `THEN`, `ELSE` y `ENDIF`.
 - Comentarios `//*`.
 - Directivas de tailoring `//*%OPC` usadas por IBM Z Workload Scheduler/TWS.
@@ -23,11 +23,27 @@ La app funciona sin servidor y sin dependencias externas. El análisis es local 
 - Ayuda contextual para `SPACE`, incluyendo unidad, espacio primario/secundario, directorio y `RLSE`.
 - Ayuda contextual para `SORT FIELDS` dentro de datos inline, incluyendo posición, longitud, formato y orden.
 
+## Navegación táctil
+
+- Las pantallas **Resumen simplificado** y **Analizar línea por línea** vuelven siempre al menú.
+- El gesto de izquierda a derecha conserva la última posición de scroll del menú al volver.
+- Al soltar el dedo tras arrastrar horizontalmente, el regreso al menú se completa de forma consistente.
+- Los archivos usan cache-busting por versión para reducir mezclas de recursos del navegador.
+
 ## Verificación
 
 Si tienes Node.js disponible:
 
 ```powershell
 node --check app.js
-node tests\smoke-test.js
+node smoke-test.js
 ```
+
+
+## Corrección v70
+
+- El gesto de regreso se activa únicamente desde los primeros 36 px del borde izquierdo.
+- Durante el arrastre, la pantalla activa se fija y se desplaza horizontalmente con el dedo.
+- El fondo visible durante el gesto es una copia temporal del menú/pantalla destino, no el panel real.
+- Al completar el gesto, se navega al menú y se restaura `savedMenuScrollY`.
+- Al cancelar el gesto, se elimina la copia temporal y se restaura la pantalla original.
