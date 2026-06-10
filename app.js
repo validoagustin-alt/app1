@@ -2135,6 +2135,17 @@ function resetSwipePanel(panel) {
   panel.style.boxShadow = "";
 }
 
+function shouldCompleteBackSwipe(deltaX, deltaY) {
+  if (!backSwipeDragging) {
+    return false;
+  }
+
+  // Una vez que el usuario ya arrastro horizontalmente la pantalla,
+  // el gesto debe completar el regreso al menu al soltar el dedo.
+  // El umbral vertical evita que un scroll vertical accidental dispare el back.
+  return deltaX > 0 && deltaY <= 120;
+}
+
 function prepareBackSwipePreview(currentScreen, targetScreen) {
   const activePanel = getPanelForScreen(currentScreen);
   const targetPanel = getPanelForScreen(targetScreen);
@@ -2319,7 +2330,7 @@ function setupBackSwipeGesture() {
       const deltaX = event.clientX - backSwipeStartX;
       const deltaY = Math.abs(event.clientY - backSwipeStartY);
       const activePanel = backSwipePanel;
-      const shouldNavigate = backSwipeDragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+      const shouldNavigate = shouldCompleteBackSwipe(deltaX, deltaY);
       backSwipeTracking = false;
       backSwipeDragging = false;
       backSwipePointerId = null;
@@ -2462,7 +2473,7 @@ function setupBackSwipeGesture() {
     const deltaX = touch.clientX - backSwipeStartX;
     const deltaY = Math.abs(touch.clientY - backSwipeStartY);
     const activePanel = backSwipePanel;
-    const shouldNavigate = backSwipeDragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+    const shouldNavigate = shouldCompleteBackSwipe(deltaX, deltaY);
     backSwipeTracking = false;
     backSwipeDragging = false;
 

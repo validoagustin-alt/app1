@@ -27,6 +27,7 @@ La app funciona sin servidor y sin dependencias externas. El análisis es local 
 
 - Las pantallas **Resumen simplificado** y **Analizar línea por línea** vuelven siempre al menú.
 - El gesto de izquierda a derecha conserva la última posición de scroll del menú al volver.
+- Al soltar el dedo tras arrastrar horizontalmente, el regreso al menú se completa de forma consistente.
 - Los archivos usan cache-busting por versión para reducir mezclas de recursos del navegador.
 
 ## Verificación

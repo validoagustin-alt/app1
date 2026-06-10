@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>JCL Explainer</title>
-  <link rel="stylesheet" href="styles.css?v=app-version-69">
+  <link rel="stylesheet" href="styles.css?v=app-version-70">
 </head>
 <body data-theme="dark" class="theme-dark">
   <main class="app-shell">
@@ -16,7 +16,7 @@
         <strong>JCL Explainer z/OS helper</strong>
         <span>Pega un JCL y obtén una explicación clara de cada sentencia: JOB, EXEC, DD, comandos, etc.</span>
       </div>
-      <div class="app-version" aria-label="Version de la app">v69</div>
+      <div class="app-version" aria-label="Version de la app">v70</div>
     </nav>
 
     <section class="workspace">
@@ -94,7 +94,7 @@
     </section>
   </main>
 
-    <script src="app.js?v=app-version-69"></script>
+    <script src="app.js?v=app-version-70"></script>
   <script>
     (function () {
       if (window.__JCL_APP_READY) {
@@ -631,7 +631,7 @@
             deltaX = event.clientX - startX;
             deltaY = Math.abs(event.clientY - startY);
             activePanel = panel;
-            shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+            shouldNavigate = dragging && deltaX > 0 && deltaY <= 120;
             tracking = false;
             dragging = false;
             if (captureElement && captureElement.releasePointerCapture) {
@@ -789,7 +789,7 @@
           deltaX = touch.clientX - startX;
           deltaY = Math.abs(touch.clientY - startY);
           activePanel = panel;
-          shouldNavigate = dragging && deltaX >= Math.max(110, window.innerWidth * 0.22) && deltaY <= 90;
+          shouldNavigate = dragging && deltaX > 0 && deltaY <= 120;
           tracking = false;
           dragging = false;
           panel = null;
