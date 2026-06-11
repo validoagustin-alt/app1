@@ -24,6 +24,8 @@
   --shadow-strong: 0 26px 80px rgba(31, 41, 55, 0.18);
   --glow: rgba(75, 91, 220, 0.28);
   --grid-line: rgba(75, 91, 220, 0.08);
+  --jcl-editor-font-size: 0.9rem;
+  --jcl-editor-mobile-font-size: clamp(8px, 2.1vw, 12px);
 }
 
 :root[data-theme="dark"],
@@ -399,9 +401,10 @@ textarea {
   background: var(--field);
   color: var(--ink);
   font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
-  font-size: 1rem;
-  line-height: 1.55;
+  font-size: var(--jcl-editor-font-size);
+  line-height: 1.5;
   tab-size: 2;
+  font-variant-ligatures: none;
 }
 
 textarea:focus {
@@ -728,7 +731,8 @@ button:hover {
   width: fit-content;
 }
 
-.syntax-help[open] {
+.syntax-help[open],
+.syntax-help.is-animating {
   width: 100%;
 }
 
@@ -756,12 +760,15 @@ button:hover {
 
 .syntax-help-content {
   margin-top: 10px;
+  transform-origin: top center;
+  contain: layout paint;
   padding: 14px;
   border: 1px solid var(--help-line);
   border-radius: 16px;
   background: var(--help-bg);
   color: var(--ink);
   line-height: 1.5;
+  transform: translate3d(0, 0, 0);
 }
 
 .syntax-help-content p {
@@ -1344,12 +1351,13 @@ textarea {
     max-height: none;
     margin: 14px 0 0 calc(50% - 50vw + 8px) !important;
     padding: 14px 8px !important;
-    font-size: 16px !important;
-    line-height: 1.5 !important;
+    font-size: var(--jcl-editor-mobile-font-size) !important;
+    line-height: 1.45 !important;
+    letter-spacing: -0.01em;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     resize: none;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     border-left: 0;
@@ -1798,3 +1806,176 @@ body[data-back-preview="menu"] .workspace {
     font-weight: 500 !important;
   }
 }
+
+/* v74: smoother syntax submenu animation */
+.syntax-help.is-animating .syntax-help-content {
+  pointer-events: none;
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
+.syntax-help-content[data-smooth-animation="true"] {
+  overflow: hidden;
+}
+
+
+/* v74: iPhone-style bottom sheet for syntax help */
+.syntax-sheet-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: #fb923c;
+  color: #1f0c00;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow: 0 12px 30px rgba(251, 146, 60, 0.16);
+}
+
+.syntax-sheet-button:hover {
+  filter: saturate(1.12) brightness(1.03);
+}
+
+.syntax-sheet-button--disp {
+  background: var(--disp-button-bg, #fb923c) !important;
+  color: var(--disp-button-ink, #1f0c00) !important;
+  box-shadow: 0 12px 30px rgba(251, 146, 60, 0.24);
+}
+
+.syntax-bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease, background 240ms ease;
+}
+
+.syntax-bottom-sheet-overlay.is-visible {
+  background: rgba(0, 0, 0, 0.42);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.syntax-bottom-sheet {
+  width: min(720px, 100%);
+  max-height: min(76vh, 720px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  border: 1px solid rgba(160, 170, 190, 0.45);
+  border-radius: 28px 28px 22px 22px;
+  background: rgba(15, 22, 36, 0.96);
+  color: #edf2ff;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.56);
+  backdrop-filter: blur(22px);
+  transform: translate3d(0, 104%, 0) scale(0.985);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  overflow: hidden;
+}
+
+.syntax-bottom-sheet-overlay.is-visible .syntax-bottom-sheet {
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.syntax-bottom-sheet:focus {
+  outline: none;
+}
+
+.syntax-bottom-sheet-handle {
+  width: 42px;
+  height: 5px;
+  margin: 10px auto 6px;
+  border-radius: 999px;
+  background: rgba(237, 242, 255, 0.38);
+}
+
+.syntax-bottom-sheet-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px 12px;
+  border-bottom: 1px solid rgba(160, 170, 190, 0.22);
+}
+
+.syntax-bottom-sheet-header strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.syntax-bottom-sheet-close {
+  padding: 8px 12px;
+  border: 1px solid rgba(237, 242, 255, 0.22);
+  background: rgba(237, 242, 255, 0.1);
+  color: #edf2ff;
+  font-size: 0.82rem;
+}
+
+.syntax-bottom-sheet-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 18px calc(18px + env(safe-area-inset-bottom));
+}
+
+.syntax-bottom-sheet .syntax-help-content {
+  margin-top: 0;
+  contain: content;
+  border-color: rgba(142, 162, 255, 0.24);
+  background: rgba(17, 26, 49, 0.88);
+  color: #edf2ff;
+}
+
+.syntax-bottom-sheet .syntax-help-content strong,
+.syntax-bottom-sheet .syntax-help-content p,
+.syntax-bottom-sheet .syntax-help-content li {
+  color: #edf2ff;
+}
+
+.syntax-bottom-sheet .syntax-help-content code {
+  background: #060914;
+  color: #f8fafc;
+}
+
+.syntax-bottom-sheet--disp .syntax-help-content,
+.syntax-bottom-sheet--disp .syntax-help-content strong,
+.syntax-bottom-sheet--disp .syntax-help-content p,
+.syntax-bottom-sheet--disp .syntax-help-content li {
+  color: #ffe66d;
+}
+
+.syntax-bottom-sheet--disp .syntax-help-content code {
+  border: 1px solid rgba(255, 230, 109, 0.35);
+  background: #171200;
+  color: #fff2a8;
+}
+
+@media (max-width: 640px) {
+  .syntax-bottom-sheet-overlay {
+    padding: 8px 8px 0;
+  }
+
+  .syntax-bottom-sheet {
+    width: 100%;
+    max-height: 82vh;
+    border-radius: 28px 28px 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syntax-bottom-sheet-overlay,
+  .syntax-bottom-sheet {
+    transition: none;
+  }
+}
+
+
+/* v75: compact JCL editor text so approximately 72 JCL columns fit on mobile widths. */

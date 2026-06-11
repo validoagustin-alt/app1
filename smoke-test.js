@@ -5,6 +5,17 @@ const appPath = path.join(__dirname, "app.js");
 const htmlPath = path.join(__dirname, "index.html");
 const source = fs.readFileSync(appPath, "utf8");
 const html = fs.readFileSync(htmlPath, "utf8");
+
+const cssPath = path.join(__dirname, "styles.css");
+const css = fs.readFileSync(cssPath, "utf8");
+
+if (!css.includes("--jcl-editor-mobile-font-size") || !css.includes("clamp(8px, 2.1vw, 12px)")) {
+  throw new Error("El editor JCL debe usar una fuente móvil reducida para aproximar 72 columnas visibles");
+}
+
+if (!css.includes("font-variant-ligatures: none") || !css.includes("overflow-x: hidden")) {
+  throw new Error("El editor JCL debe optimizar lectura monoespaciada y evitar scroll horizontal innecesario");
+}
 const start = source.indexOf("const exampleJcls");
 const end = source.indexOf("function renderAnalysis");
 const inlineScripts = [];
@@ -25,6 +36,22 @@ if (!source.includes("createBackSwipePreviewClone") || !source.includes("back-sw
 
 if (!source.includes("restoreMenuScrollPosition") || !source.includes("savedMenuScrollY")) {
   throw new Error("La app debe conservar y restaurar el scroll del menu");
+}
+
+if (!html.includes("app-version-75") || !html.includes(">v75<")) {
+  throw new Error("La version visible y cache-busting deben estar en v75");
+}
+
+if (!source.includes("function openSyntaxBottomSheet") || !source.includes("function closeSyntaxBottomSheet") || !source.includes("syntax-bottom-sheet")) {
+  throw new Error("Los submenus de sintaxis deben abrirse como bottom sheet");
+}
+
+if (!source.includes("buildSyntaxHelpContent") || !source.includes("syntax-sheet-button") || !source.includes("handleSyntaxBottomSheetKeydown")) {
+  throw new Error("La ayuda de sintaxis debe renderizarse en una hoja inferior reutilizable y cerrable");
+}
+
+if (!html.includes("app-version-75") || !html.includes(">v75<")) {
+  throw new Error("La version visible y cache-busting deben estar en v75");
 }
 
 while ((scriptMatch = scriptPattern.exec(html))) {

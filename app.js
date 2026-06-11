@@ -1377,15 +1377,35 @@ function normalizeLineForComparison(value) {
 }
 
 function renderHelpItem(helpItem) {
-  const details = document.createElement("details");
-  details.className = helpItem.key === "DISP" ? "syntax-help syntax-help--disp" : "syntax-help";
+  const button = document.createElement("button");
+  button.className = helpItem.key === "DISP" ? "syntax-sheet-button syntax-sheet-button--disp" : "syntax-sheet-button";
+  button.type = "button";
+  button.textContent = helpItem.buttonLabel;
+  button.addEventListener("click", () => {
+    openSyntaxBottomSheet(helpItem);
+  });
 
-  const summary = document.createElement("summary");
-  summary.textContent = helpItem.buttonLabel;
-  details.appendChild(summary);
+  if (helpItem.key !== "DISP") {
+    return button;
+  }
 
+  const wrapper = document.createElement("div");
+  wrapper.className = "disp-help-row";
+
+  const paletteButton = document.createElement("button");
+  paletteButton.className = "disp-mini-button";
+  paletteButton.type = "button";
+  paletteButton.textContent = "20";
+  paletteButton.setAttribute("aria-label", "Abrir pantalla de opciones visuales DISP");
+  paletteButton.addEventListener("click", showDispPaletteScreen);
+
+  wrapper.append(button, paletteButton);
+  return wrapper;
+}
+
+function buildSyntaxHelpContent(helpItem) {
   const content = document.createElement("div");
-  content.className = "syntax-help-content";
+  content.className = helpItem.key === "DISP" ? "syntax-help-content syntax-help-content--disp" : "syntax-help-content";
 
   const title = document.createElement("strong");
   title.textContent = helpItem.title;
@@ -1420,24 +1440,209 @@ function renderHelpItem(helpItem) {
     content.append(groupTitle, values);
   });
 
-  details.appendChild(content);
+  return content;
+}
 
-  if (helpItem.key !== "DISP") {
-    return details;
+function openSyntaxBottomSheet(helpItem) {
+  closeSyntaxBottomSheet(true);
+
+  const overlay = document.createElement("div");
+  overlay.className = "syntax-bottom-sheet-overlay";
+  overlay.setAttribute("role", "presentation");
+
+  const sheet = document.createElement("section");
+  sheet.className = helpItem.key === "DISP" ? "syntax-bottom-sheet syntax-bottom-sheet--disp" : "syntax-bottom-sheet";
+  sheet.setAttribute("role", "dialog");
+  sheet.setAttribute("aria-modal", "true");
+  sheet.setAttribute("aria-label", helpItem.title);
+  sheet.tabIndex = -1;
+
+  const handle = document.createElement("div");
+  handle.className = "syntax-bottom-sheet-handle";
+  handle.setAttribute("aria-hidden", "true");
+
+  const header = document.createElement("div");
+  header.className = "syntax-bottom-sheet-header";
+
+  const heading = document.createElement("strong");
+  heading.textContent = helpItem.buttonLabel;
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "syntax-bottom-sheet-close";
+  closeButton.type = "button";
+  closeButton.textContent = "Cerrar";
+  closeButton.addEventListener("click", () => closeSyntaxBottomSheet());
+
+  header.append(heading, closeButton);
+
+  const scrollArea = document.createElement("div");
+  scrollArea.className = "syntax-bottom-sheet-scroll";
+  scrollArea.appendChild(buildSyntaxHelpContent(helpItem));
+
+  sheet.append(handle, header, scrollArea);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  document.body.dataset.syntaxSheet = "open";
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeSyntaxBottomSheet();
+    }
+  });
+
+  requestAnimationFrame(() => {
+    overlay.classList.add("is-visible");
+    sheet.focus({ preventScroll: true });
+  });
+}
+
+function closeSyntaxBottomSheet(immediate = false) {
+  const overlay = document.querySelector(".syntax-bottom-sheet-overlay");
+
+  if (!overlay) {
+    document.body.dataset.syntaxSheet = "closed";
+    return;
   }
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "disp-help-row";
+  const removeSheet = () => {
+    if (overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+    }
+    document.body.dataset.syntaxSheet = "closed";
+  };
 
-  const paletteButton = document.createElement("button");
-  paletteButton.className = "disp-mini-button";
-  paletteButton.type = "button";
-  paletteButton.textContent = "20";
-  paletteButton.setAttribute("aria-label", "Abrir pantalla de opciones visuales DISP");
-  paletteButton.addEventListener("click", showDispPaletteScreen);
+  if (immediate || window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    removeSheet();
+    return;
+  }
 
-  wrapper.append(details, paletteButton);
-  return wrapper;
+  overlay.classList.remove("is-visible");
+  window.setTimeout(removeSheet, 260);
+}
+
+function handleSyntaxBottomSheetKeydown(event) {
+  if (event.key === "Escape") {
+    closeSyntaxBottomSheet();
+  }
+}
+
+function toggleSyntaxHelp(details) {
+  const content = details.querySelector(".syntax-help-content");
+
+  if (!content || details.dataset.animating === "true") {
+    return;
+  }
+
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    details.open = !details.open;
+    return;
+  }
+
+  if (details.open) {
+    closeSyntaxHelp(details, content);
+  } else {
+    openSyntaxHelp(details, content);
+  }
+}
+
+const syntaxHelpAnimationMs = 520;
+
+function openSyntaxHelp(details, content) {
+  details.open = true;
+  details.classList.add("is-animating", "is-opening");
+
+  prepareSyntaxHelpLayer(content);
+  animateSyntaxHelpFrameByFrame(details, content, {
+    fromHeight: 0,
+    toHeight: content.scrollHeight,
+    fromOpacity: 0,
+    toOpacity: 1,
+    fromTranslateY: -8,
+    toTranslateY: 0,
+    onFinish: () => finishSyntaxHelpAnimation(details, content)
+  });
+}
+
+function closeSyntaxHelp(details, content) {
+  details.classList.add("is-animating", "is-closing");
+
+  prepareSyntaxHelpLayer(content);
+  animateSyntaxHelpFrameByFrame(details, content, {
+    fromHeight: content.getBoundingClientRect().height || content.scrollHeight,
+    toHeight: 0,
+    fromOpacity: 1,
+    toOpacity: 0,
+    fromTranslateY: 0,
+    toTranslateY: -8,
+    onFinish: () => {
+      details.open = false;
+      finishSyntaxHelpAnimation(details, content);
+    }
+  });
+}
+
+function animateSyntaxHelpFrameByFrame(details, content, options) {
+  if (content._syntaxHelpRaf) {
+    cancelAnimationFrame(content._syntaxHelpRaf);
+  }
+
+  details.dataset.animating = "true";
+  content.dataset.smoothAnimation = "true";
+
+  const startTime = performance.now();
+  const duration = syntaxHelpAnimationMs;
+  const heightDelta = options.toHeight - options.fromHeight;
+  const opacityDelta = options.toOpacity - options.fromOpacity;
+  const translateDelta = options.toTranslateY - options.fromTranslateY;
+
+  function draw(now) {
+    const elapsed = Math.min(1, (now - startTime) / duration);
+    const eased = easeOutCubic(elapsed);
+    const currentHeight = options.fromHeight + (heightDelta * eased);
+    const currentOpacity = options.fromOpacity + (opacityDelta * eased);
+    const currentTranslateY = options.fromTranslateY + (translateDelta * eased);
+
+    content.style.height = `${Math.max(0, currentHeight).toFixed(2)}px`;
+    content.style.opacity = currentOpacity.toFixed(3);
+    content.style.transform = `translate3d(0, ${currentTranslateY.toFixed(2)}px, 0)`;
+
+    if (elapsed < 1) {
+      content._syntaxHelpRaf = requestAnimationFrame(draw);
+      return;
+    }
+
+    content._syntaxHelpRaf = 0;
+    options.onFinish();
+  }
+
+  content.style.height = `${options.fromHeight}px`;
+  content.style.opacity = `${options.fromOpacity}`;
+  content.style.transform = `translate3d(0, ${options.fromTranslateY}px, 0)`;
+  content._syntaxHelpRaf = requestAnimationFrame(draw);
+}
+
+function easeOutCubic(progress) {
+  return 1 - Math.pow(1 - progress, 3);
+}
+
+function prepareSyntaxHelpLayer(content) {
+  content.style.overflow = "hidden";
+  content.style.willChange = "height, opacity, transform";
+  content.style.backfaceVisibility = "hidden";
+  content.style.transform = "translate3d(0, 0, 0)";
+}
+
+function finishSyntaxHelpAnimation(details, content) {
+  details.dataset.animating = "false";
+  details.classList.remove("is-animating", "is-opening", "is-closing");
+  content.dataset.smoothAnimation = "false";
+  content.style.transition = "";
+  content.style.height = "";
+  content.style.overflow = "";
+  content.style.opacity = "";
+  content.style.transform = "";
+  content.style.willChange = "";
+  content.style.backfaceVisibility = "";
 }
 
 function renderSummary(analysis) {
@@ -2743,6 +2948,8 @@ window.addEventListener("pageshow", () => {
     restoreMenuScrollPosition("auto");
   }
 });
+
+document.addEventListener("keydown", handleSyntaxBottomSheetKeydown);
 
 setupBackSwipeGesture();
 
