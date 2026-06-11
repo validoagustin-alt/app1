@@ -1377,19 +1377,35 @@ function normalizeLineForComparison(value) {
 }
 
 function renderHelpItem(helpItem) {
-  const details = document.createElement("details");
-  details.className = helpItem.key === "DISP" ? "syntax-help syntax-help--disp" : "syntax-help";
-
-  const summary = document.createElement("summary");
-  summary.textContent = helpItem.buttonLabel;
-  summary.addEventListener("click", (event) => {
-    event.preventDefault();
-    toggleSyntaxHelp(details);
+  const button = document.createElement("button");
+  button.className = helpItem.key === "DISP" ? "syntax-sheet-button syntax-sheet-button--disp" : "syntax-sheet-button";
+  button.type = "button";
+  button.textContent = helpItem.buttonLabel;
+  button.addEventListener("click", () => {
+    openSyntaxBottomSheet(helpItem);
   });
-  details.appendChild(summary);
 
+  if (helpItem.key !== "DISP") {
+    return button;
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "disp-help-row";
+
+  const paletteButton = document.createElement("button");
+  paletteButton.className = "disp-mini-button";
+  paletteButton.type = "button";
+  paletteButton.textContent = "20";
+  paletteButton.setAttribute("aria-label", "Abrir pantalla de opciones visuales DISP");
+  paletteButton.addEventListener("click", showDispPaletteScreen);
+
+  wrapper.append(button, paletteButton);
+  return wrapper;
+}
+
+function buildSyntaxHelpContent(helpItem) {
   const content = document.createElement("div");
-  content.className = "syntax-help-content";
+  content.className = helpItem.key === "DISP" ? "syntax-help-content syntax-help-content--disp" : "syntax-help-content";
 
   const title = document.createElement("strong");
   title.textContent = helpItem.title;
@@ -1424,24 +1440,90 @@ function renderHelpItem(helpItem) {
     content.append(groupTitle, values);
   });
 
-  details.appendChild(content);
+  return content;
+}
 
-  if (helpItem.key !== "DISP") {
-    return details;
+function openSyntaxBottomSheet(helpItem) {
+  closeSyntaxBottomSheet(true);
+
+  const overlay = document.createElement("div");
+  overlay.className = "syntax-bottom-sheet-overlay";
+  overlay.setAttribute("role", "presentation");
+
+  const sheet = document.createElement("section");
+  sheet.className = helpItem.key === "DISP" ? "syntax-bottom-sheet syntax-bottom-sheet--disp" : "syntax-bottom-sheet";
+  sheet.setAttribute("role", "dialog");
+  sheet.setAttribute("aria-modal", "true");
+  sheet.setAttribute("aria-label", helpItem.title);
+  sheet.tabIndex = -1;
+
+  const handle = document.createElement("div");
+  handle.className = "syntax-bottom-sheet-handle";
+  handle.setAttribute("aria-hidden", "true");
+
+  const header = document.createElement("div");
+  header.className = "syntax-bottom-sheet-header";
+
+  const heading = document.createElement("strong");
+  heading.textContent = helpItem.buttonLabel;
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "syntax-bottom-sheet-close";
+  closeButton.type = "button";
+  closeButton.textContent = "Cerrar";
+  closeButton.addEventListener("click", () => closeSyntaxBottomSheet());
+
+  header.append(heading, closeButton);
+
+  const scrollArea = document.createElement("div");
+  scrollArea.className = "syntax-bottom-sheet-scroll";
+  scrollArea.appendChild(buildSyntaxHelpContent(helpItem));
+
+  sheet.append(handle, header, scrollArea);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  document.body.dataset.syntaxSheet = "open";
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeSyntaxBottomSheet();
+    }
+  });
+
+  requestAnimationFrame(() => {
+    overlay.classList.add("is-visible");
+    sheet.focus({ preventScroll: true });
+  });
+}
+
+function closeSyntaxBottomSheet(immediate = false) {
+  const overlay = document.querySelector(".syntax-bottom-sheet-overlay");
+
+  if (!overlay) {
+    document.body.dataset.syntaxSheet = "closed";
+    return;
   }
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "disp-help-row";
+  const removeSheet = () => {
+    if (overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+    }
+    document.body.dataset.syntaxSheet = "closed";
+  };
 
-  const paletteButton = document.createElement("button");
-  paletteButton.className = "disp-mini-button";
-  paletteButton.type = "button";
-  paletteButton.textContent = "20";
-  paletteButton.setAttribute("aria-label", "Abrir pantalla de opciones visuales DISP");
-  paletteButton.addEventListener("click", showDispPaletteScreen);
+  if (immediate || window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    removeSheet();
+    return;
+  }
 
-  wrapper.append(details, paletteButton);
-  return wrapper;
+  overlay.classList.remove("is-visible");
+  window.setTimeout(removeSheet, 260);
+}
+
+function handleSyntaxBottomSheetKeydown(event) {
+  if (event.key === "Escape") {
+    closeSyntaxBottomSheet();
+  }
 }
 
 function toggleSyntaxHelp(details) {
@@ -2866,6 +2948,8 @@ window.addEventListener("pageshow", () => {
     restoreMenuScrollPosition("auto");
   }
 });
+
+document.addEventListener("keydown", handleSyntaxBottomSheetKeydown);
 
 setupBackSwipeGesture();
 

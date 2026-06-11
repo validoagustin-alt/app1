@@ -27,24 +27,20 @@ if (!source.includes("restoreMenuScrollPosition") || !source.includes("savedMenu
   throw new Error("La app debe conservar y restaurar el scroll del menu");
 }
 
-if (!html.includes("app-version-73") || !html.includes(">v73<")) {
-  throw new Error("La version visible y cache-busting deben estar en v73");
+if (!html.includes("app-version-74") || !html.includes(">v74<")) {
+  throw new Error("La version visible y cache-busting deben estar en v74");
 }
 
-if (!source.includes("function toggleSyntaxHelp") || !source.includes("function openSyntaxHelp") || !source.includes("function closeSyntaxHelp")) {
-  throw new Error("Los submenus de sintaxis deben usar apertura/cierre animado");
+if (!source.includes("function openSyntaxBottomSheet") || !source.includes("function closeSyntaxBottomSheet") || !source.includes("syntax-bottom-sheet")) {
+  throw new Error("Los submenus de sintaxis deben abrirse como bottom sheet");
 }
 
-if (!source.includes("summary.addEventListener") || !source.includes("event.preventDefault()") || !source.includes("syntaxHelpAnimationMs = 520")) {
-  throw new Error("La expansion de sintaxis debe interceptar el summary y usar una animacion dedicada");
+if (!source.includes("buildSyntaxHelpContent") || !source.includes("syntax-sheet-button") || !source.includes("handleSyntaxBottomSheetKeydown")) {
+  throw new Error("La ayuda de sintaxis debe renderizarse en una hoja inferior reutilizable y cerrable");
 }
 
-if (!source.includes("requestAnimationFrame") || !source.includes("function animateSyntaxHelpFrameByFrame") || !source.includes("function easeOutCubic")) {
-  throw new Error("La animacion de sintaxis debe usar requestAnimationFrame para mejorar la fluidez percibida");
-}
-
-if (!source.includes("translate3d") || !source.includes("willChange") || !source.includes("toFixed(2)")) {
-  throw new Error("La animacion de sintaxis debe usar compositing y actualizacion frame-by-frame estable");
+if (!html.includes("app-version-74") || !html.includes(">v74<")) {
+  throw new Error("La version visible y cache-busting deben estar en v74");
 }
 
 while ((scriptMatch = scriptPattern.exec(html))) {

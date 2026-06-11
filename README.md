@@ -41,9 +41,9 @@ node smoke-test.js
 ```
 
 
-## Cambios v73
+## Cambios v74
 
-- Versión incrementada a `v73`.
+- Versión incrementada a `v74`.
 - Cache-busting actualizado a `app-version-73`.
 - Los submenús de sintaxis en la pantalla **Analizar línea por línea** ahora usan animación por `height` medido en vez de `max-height`.
 - Se agregó easing más fluido, `translate3d`, `will-change` temporal y `contain: layout paint` para reducir saltos visuales en móviles.
@@ -57,9 +57,16 @@ node smoke-test.js
 - Al cancelar el gesto, se elimina la copia temporal y se restaura la pantalla original.
 
 
-## Cambios v73
+## Cambios v74
 
-- Versión incrementada a `v73`.
+- Versión incrementada a `v74`.
 - Cache-busting actualizado a `app-version-73`.
 - La expansión de submenús de sintaxis ahora usa animación frame-by-frame con `requestAnimationFrame`, medición de altura y `translate3d` para una sensación más cercana a 60 fps.
 - Se aumentó la duración de la transición para reducir la percepción de saltos entre cuadros en móviles.
+
+
+## Cambios v74
+
+- Prueba visual de ayuda de sintaxis como bottom sheet estilo iPhone.
+- Los submenús de sintaxis ya no expanden la altura principal de las tarjetas: abren una hoja inferior animada con `transform`, más apta para 60 fps percibidos en móvil.
+- Cache-busting actualizado a v74.
